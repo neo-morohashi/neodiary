@@ -149,6 +149,17 @@ const dateStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.g
 const timeStr = `${pad(today.getHours())}:${pad(today.getMinutes())}`;
 document.getElementById('dateLabel').textContent = `${dateStr}`;
 
+// ── URLパラメータからURLを受け取る（ショートカット連携）──
+(function() {
+  const params = new URLSearchParams(location.search);
+  const sharedUrl = params.get('url');
+  if (sharedUrl) {
+    document.getElementById('memo').value = sharedUrl;
+    // URLパラメータをURLバーから消す（履歴を汚さない）
+    history.replaceState(null, '', location.pathname);
+  }
+})();
+
 // ── 設定の読み書き ──
 function loadSettings() {
   document.getElementById('inputToken').value = localStorage.getItem('gh_token') || '';
