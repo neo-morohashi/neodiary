@@ -128,11 +128,32 @@ def fetch_url_summary(url: str) -> str:
     try:
         res = requests.get(url, timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
         res.raise_for_status()
-        # 簡易的にテキスト抽出（HTMLタグ除去）
-        text = re.sub(r'<[^>]+>', ' ', res.text)
-        text = re.sub(r'\s+', ' ', text).strip()
-        # 長すぎる場合は先頭3000文字だけ使う
-        text = text[:3000]
+        html = res.text
+
+        # タイトル抽出
+        title_m = re.search(r'<title[^>]*>(.*?)</title>', html, re.IGNORECASE | re.DOTALL)
+        title = re.sub(r'\s+', ' ', title_m.group(1)).strip() if title_m else ''
+
+        # meta description 抽出
+        desc_m = re.search(r'<meta[^>]+name=["\']description["\'][^>]+content=["\'](.*?)["\']',
+                           html, re.IGNORECASE)
+        desc = desc_m.group(1).strip() if desc_m else ''
+
+        # OGP description をフォールバックに
+        if not desc:
+            og_m = re.search(r'<meta[^>]+property=["\']og:description["\'][^>]+content=["\'](.*?)["\']',
+                             html, re.IGNORECASE)
+            desc = og_m.group(1).strip() if og_m else ''
+
+        # 本文テキスト（script/style除去後）
+        body = re.sub(r'<(script|style)[^>]*>.*?</\1>', ' ', html, flags=re.IGNORECASE | re.DOTALL)
+        body = re.sub(r'<[^>]+>', ' ', body)
+        body = re.sub(r'\s+', ' ', body).strip()[:2000]
+
+        context = f'タイトル: {title}\n説明: {desc}\n本文抜粋: {body}' if (title or desc) else body
+        if not context.strip():
+            return '（ページ内容を取得できませんでした）'
+
     except Exception as e:
         return f'（URL取得失敗: {e}）'
 
@@ -142,7 +163,7 @@ def fetch_url_summary(url: str) -> str:
         max_tokens=400,
         messages=[{
             'role': 'user',
-            'content': URL_SUMMARY_PROMPT.format(content=text)
+            'content': URL_SUMMARY_PROMPT.format(content=context)
         }]
     )
     return msg.content[0].text.strip()
