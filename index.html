@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>日記メモ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f5f5f7;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin-bottom: 4px;
+  }
+  .date {
+    font-size: 13px;
+    color: #6e6e73;
+    margin-bottom: 16px;
+  }
+  textarea {
+    width: 100%;
+    flex: 1;
+    min-height: 180px;
+    padding: 14px;
+    border: 1px solid #d2d2d7;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 1.6;
+    resize: vertical;
+    background: #fff;
+    color: #1d1d1f;
+    outline: none;
+    margin-bottom: 12px;
+  }
+  textarea:focus { border-color: #0071e3; }
+  .buttons {
+    display: flex;
+    gap: 10px;
+  }
+  button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  button:active { opacity: 0.7; }
+  #micBtn {
+    background: #f2f2f7;
+    color: #1d1d1f;
+    flex: 0 0 54px;
+    font-size: 22px;
+  }
+  #micBtn.recording { background: #ff3b30; color: #fff; }
+  #submitBtn {
+    background: #0071e3;
+    color: #fff;
+  }
+  #submitBtn:disabled { background: #aeaeb2; cursor: default; }
+  .status {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    display: none;
+  }
+  .status.ok  { background: #d1f5d3; color: #1a5c1f; }
+  .status.err { background: #ffd2d2; color: #8b0000; }
+  .settings-icon {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #6e6e73;
+  }
+  #settingsPanel {
+    display: none;
+    background: #fff;
+    border: 1px solid #d2d2d7;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  #settingsPanel input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d2d2d7;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+  }
+  #settingsPanel label { font-size: 13px; color: #6e6e73; }
+  #saveSettingsBtn {
+    background: #34c759;
+    color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 100%;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  body { position: relative; }
+</style>
+</head>
+<body>
+
+<span class="settings-icon" onclick="toggleSettings()">⚙️</span>
+
+<h1>📓 日記メモ</h1>
+<div class="date" id="dateLabel"></div>
+
+<div id="settingsPanel">
+  <label>GitHub Personal Access Token</label>
+  <input type="password" id="inputToken" placeholder="ghp_xxxxxxxxxx">
+  <label>リポジトリ (owner/repo)</label>
+  <input type="text" id="inputRepo" placeholder="neo/diary-inbox">
+  <button id="saveSettingsBtn" onclick="saveSettings()">保存</button>
+</div>
+
+<textarea id="memo" placeholder="今日の記録を入力（音声入力も使えます）"></textarea>
+
+<div class="buttons">
+  <button id="micBtn" onclick="toggleMic()" title="音声入力">🎤</button>
+  <button id="submitBtn" onclick="submitEntry()">送信</button>
+</div>
+
+<div class="status" id="status"></div>
+
+<script>
+// ── 日付表示 ──
+const today = new Date();
+const pad = n => String(n).padStart(2, '0');
+const dateStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+const timeStr = `${pad(today.getHours())}:${pad(today.getMinutes())}`;
+document.getElementById('dateLabel').textContent = `${dateStr}`;
+
+// ── 設定の読み書き ──
+function loadSettings() {
+  document.getElementById('inputToken').value = localStorage.getItem('gh_token') || '';
+  document.getElementById('inputRepo').value  = localStorage.getItem('gh_repo')  || '';
+}
+function saveSettings() {
+  localStorage.setItem('gh_token', document.getElementById('inputToken').value.trim());
+  localStorage.setItem('gh_repo',  document.getElementById('inputRepo').value.trim());
+  showStatus('✅ 設定を保存しました', 'ok');
+  setTimeout(() => document.getElementById('settingsPanel').style.display = 'none', 800);
+}
+function toggleSettings() {
+  const p = document.getElementById('settingsPanel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  loadSettings();
+}
+
+// ── ステータス表示 ──
+function showStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = `status ${type}`;
+  el.style.display = 'block';
+  if (type === 'ok') setTimeout(() => el.style.display = 'none', 2500);
+}
+
+// ── 音声入力 ──
+let recognition = null;
+let isRecording = false;
+
+function toggleMic() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    showStatus('このブラウザは音声入力に対応していません', 'err');
+    return;
+  }
+  if (isRecording) {
+    recognition.stop();
+    return;
+  }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'ja-JP';
+  recognition.continuous = true;
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    isRecording = true;
+    document.getElementById('micBtn').classList.add('recording');
+    document.getElementById('micBtn').textContent = '⏹';
+  };
+  recognition.onresult = e => {
+    const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+    const ta = document.getElementById('memo');
+    ta.value = ta.value ? ta.value + '\n' + transcript : transcript;
+  };
+  recognition.onend = () => {
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    document.getElementById('micBtn').textContent = '🎤';
+  };
+  recognition.start();
+}
+
+// ── GitHub への保存 ──
+async function submitEntry() {
+  const text = document.getElementById('memo').value.trim();
+  if (!text) { showStatus('テキストを入力してください', 'err'); return; }
+
+  const token = localStorage.getItem('gh_token');
+  const repo  = localStorage.getItem('gh_repo');
+  if (!token || !repo) {
+    showStatus('⚙️ 設定からTokenとリポジトリを入力してください', 'err');
+    toggleSettings();
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '送信中…';
+
+  const filePath = `inbox/${dateStr}.txt`;
+  const entry = `[${timeStr}]\n${text}\n---\n`;
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+
+  try {
+    // 既存ファイルを取得（あれば追記、なければ新規）
+    let sha = null;
+    let existingContent = '';
+    const getRes = await fetch(apiUrl, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+    });
+    if (getRes.ok) {
+      const data = await getRes.json();
+      sha = data.sha;
+      existingContent = atob(data.content.replace(/\n/g, ''));
+    }
+
+    const newContent = existingContent + entry;
+    const body = {
+      message: `diary: ${dateStr} ${timeStr}`,
+      content: btoa(unescape(encodeURIComponent(newContent))),
+    };
+    if (sha) body.sha = sha;
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!putRes.ok) throw new Error(`GitHub API error: ${putRes.status}`);
+
+    showStatus(`✅ 保存しました（${dateStr} ${timeStr}）`, 'ok');
+    document.getElementById('memo').value = '';
+
+  } catch (e) {
+    showStatus(`❌ 送信失敗: ${e.message}`, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '送信';
+  }
+}
+</script>
+</body>
+</html>
