@@ -229,29 +229,17 @@ async function submitEntry() {
   btn.disabled = true;
   btn.textContent = '送信中…';
 
-  const filePath = `inbox/${dateStr}.txt`;
-  const entry = `[${timeStr}]\n${text}\n---\n`;
+  // 1送信 = 1ファイル（タイムスタンプ付き）
+  const ts = `${pad(today.getHours())}${pad(today.getMinutes())}${pad(today.getSeconds())}`;
+  const filePath = `inbox/${dateStr}_${ts}.txt`;
+  const entry = `[${timeStr}]\n${text}\n`;
   const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
 
   try {
-    // 既存ファイルを取得（あれば追記、なければ新規）
-    let sha = null;
-    let existingContent = '';
-    const getRes = await fetch(apiUrl, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
-    });
-    if (getRes.ok) {
-      const data = await getRes.json();
-      sha = data.sha;
-      existingContent = atob(data.content.replace(/\n/g, ''));
-    }
-
-    const newContent = existingContent + entry;
     const body = {
       message: `diary: ${dateStr} ${timeStr}`,
-      content: btoa(unescape(encodeURIComponent(newContent))),
+      content: btoa(unescape(encodeURIComponent(entry))),
     };
-    if (sha) body.sha = sha;
 
     const putRes = await fetch(apiUrl, {
       method: 'PUT',
