@@ -151,11 +151,12 @@ document.getElementById('dateLabel').textContent = `${dateStr}`;
 
 // ── URLパラメータからURLを受け取る（ショートカット連携）──
 (function() {
-  const params = new URLSearchParams(location.search);
-  const sharedUrl = params.get('url');
-  if (sharedUrl) {
+  const search = location.search;
+  const prefix = '?url=';
+  if (search.startsWith(prefix)) {
+    // URLSearchParamsは&で分割してしまうため生文字列から取得
+    const sharedUrl = decodeURIComponent(search.slice(prefix.length));
     document.getElementById('memo').value = sharedUrl;
-    // URLパラメータをURLバーから消す（履歴を汚さない）
     history.replaceState(null, '', location.pathname);
   }
 })();
