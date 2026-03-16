@@ -13,6 +13,7 @@
     display: flex;
     flex-direction: column;
     padding: 16px;
+    position: relative;
   }
   h1 {
     font-size: 18px;
@@ -41,6 +42,43 @@
     margin-bottom: 12px;
   }
   textarea:focus { border-color: #0071e3; }
+
+  /* 画像プレビューエリア */
+  #imagePreview {
+    display: none;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  #imagePreview img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #d2d2d7;
+  }
+  .img-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  .img-remove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ff3b30;
+    color: #fff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    font-weight: bold;
+  }
+
   .buttons {
     display: flex;
     gap: 10px;
@@ -63,6 +101,12 @@
     font-size: 22px;
   }
   #micBtn.recording { background: #ff3b30; color: #fff; }
+  #photoBtn {
+    background: #f2f2f7;
+    color: #1d1d1f;
+    flex: 0 0 54px;
+    font-size: 22px;
+  }
   #submitBtn {
     background: #0071e3;
     color: #fff;
@@ -114,7 +158,6 @@
     font-weight: 600;
     cursor: pointer;
   }
-  body { position: relative; }
 </style>
 </head>
 <body>
@@ -134,8 +177,14 @@
 
 <textarea id="memo" placeholder="今日の記録を入力（音声入力も使えます）"></textarea>
 
+<!-- 画像プレビュー -->
+<div id="imagePreview"></div>
+
+<input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="onFilesSelected(event)">
+
 <div class="buttons">
   <button id="micBtn" onclick="toggleMic()" title="音声入力">🎤</button>
+  <button id="photoBtn" onclick="document.getElementById('fileInput').click()" title="写真を添付">📷</button>
   <button id="submitBtn" onclick="submitEntry()">送信</button>
 </div>
 
@@ -154,7 +203,6 @@ document.getElementById('dateLabel').textContent = `${dateStr}`;
   const search = location.search;
   const prefix = '?url=';
   if (search.startsWith(prefix)) {
-    // URLSearchParamsは&で分割してしまうため生文字列から取得
     const sharedUrl = decodeURIComponent(search.slice(prefix.length));
     document.getElementById('memo').value = sharedUrl;
     history.replaceState(null, '', location.pathname);
@@ -224,10 +272,75 @@ function toggleMic() {
   recognition.start();
 }
 
+// ── 画像添付 ──
+let pendingFiles = []; // { file, dataUrl, b64 }
+
+function onFilesSelected(event) {
+  const files = Array.from(event.target.files);
+  event.target.value = '';
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const dataUrl = e.target.result;
+      const b64 = dataUrl.split(',')[1];
+      pendingFiles.push({ file, dataUrl, b64 });
+      renderPreviews();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPreviews() {
+  const area = document.getElementById('imagePreview');
+  area.innerHTML = '';
+  if (pendingFiles.length === 0) {
+    area.style.display = 'none';
+    return;
+  }
+  area.style.display = 'flex';
+  pendingFiles.forEach((item, idx) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'img-wrap';
+    const img = document.createElement('img');
+    img.src = item.dataUrl;
+    const btn = document.createElement('button');
+    btn.className = 'img-remove';
+    btn.textContent = '×';
+    btn.onclick = () => { pendingFiles.splice(idx, 1); renderPreviews(); };
+    wrap.appendChild(img);
+    wrap.appendChild(btn);
+    area.appendChild(wrap);
+  });
+}
+
+async function uploadImage(token, repo, file, b64, ts, idx) {
+  const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+  const filePath = `inbox/images/${dateStr}_${ts}_${idx}.${ext}`;
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+  const res = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      message: `diary: image ${dateStr} ${timeStr}`,
+      content: b64,
+    }),
+  });
+  if (!res.ok) throw new Error(`画像アップロード失敗: ${res.status}`);
+  const data = await res.json();
+  return data.content.download_url;
+}
+
 // ── GitHub への保存 ──
 async function submitEntry() {
   const text = document.getElementById('memo').value.trim();
-  if (!text) { showStatus('テキストを入力してください', 'err'); return; }
+  if (!text && pendingFiles.length === 0) {
+    showStatus('テキストまたは画像を入力してください', 'err');
+    return;
+  }
 
   const token = localStorage.getItem('gh_token');
   const repo  = localStorage.getItem('gh_repo');
@@ -241,18 +354,27 @@ async function submitEntry() {
   btn.disabled = true;
   btn.textContent = '送信中…';
 
-  // 1送信 = 1ファイル（タイムスタンプ付き）
   const ts = `${pad(today.getHours())}${pad(today.getMinutes())}${pad(today.getSeconds())}`;
-  const filePath = `inbox/${dateStr}_${ts}.txt`;
-  const entry = `[${timeStr}]\n${text}\n`;
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
 
   try {
-    const body = {
-      message: `diary: ${dateStr} ${timeStr}`,
-      content: btoa(unescape(encodeURIComponent(entry))),
-    };
+    // 画像を先にアップロード
+    const imageUrls = [];
+    for (let i = 0; i < pendingFiles.length; i++) {
+      const { file, b64 } = pendingFiles[i];
+      showStatus(`📷 画像をアップロード中… (${i+1}/${pendingFiles.length})`, 'ok');
+      const url = await uploadImage(token, repo, file, b64, ts, i+1);
+      imageUrls.push(url);
+    }
 
+    // テキストエントリに画像URLを付記
+    let entry = `[${timeStr}]\n${text}\n`;
+    if (imageUrls.length > 0) {
+      entry += '\n' + imageUrls.map(u => `![画像](${u})`).join('\n') + '\n';
+    }
+
+    // テキストファイルを保存
+    const filePath = `inbox/${dateStr}_${ts}.txt`;
+    const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
     const putRes = await fetch(apiUrl, {
       method: 'PUT',
       headers: {
@@ -260,13 +382,18 @@ async function submitEntry() {
         Accept: 'application/vnd.github+json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        message: `diary: ${dateStr} ${timeStr}`,
+        content: btoa(unescape(encodeURIComponent(entry))),
+      }),
     });
 
     if (!putRes.ok) throw new Error(`GitHub API error: ${putRes.status}`);
 
     showStatus(`✅ 保存しました（${dateStr} ${timeStr}）`, 'ok');
     document.getElementById('memo').value = '';
+    pendingFiles = [];
+    renderPreviews();
 
   } catch (e) {
     showStatus(`❌ 送信失敗: ${e.message}`, 'err');
