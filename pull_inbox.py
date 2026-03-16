@@ -123,44 +123,77 @@ def delete_file(path: str, sha: str, label: str):
     res.raise_for_status()
 
 
+def _extract_page_text(html: str, base_url: str = '') -> tuple[str, str, str, list[str]]:
+    """HTMLからタイトル・description・本文・内部リンクを抽出"""
+    from urllib.parse import urljoin, urlparse
+
+    title_m = re.search(r'<title[^>]*>(.*?)</title>', html, re.IGNORECASE | re.DOTALL)
+    title = re.sub(r'\s+', ' ', title_m.group(1)).strip() if title_m else ''
+
+    desc_m = re.search(r'<meta[^>]+name=["\']description["\'][^>]+content=["\'](.*?)["\']',
+                       html, re.IGNORECASE)
+    desc = desc_m.group(1).strip() if desc_m else ''
+    if not desc:
+        og_m = re.search(r'<meta[^>]+property=["\']og:description["\'][^>]+content=["\'](.*?)["\']',
+                         html, re.IGNORECASE)
+        desc = og_m.group(1).strip() if og_m else ''
+
+    body = re.sub(r'<(script|style)[^>]*>.*?</\1>', ' ', html, flags=re.IGNORECASE | re.DOTALL)
+    body = re.sub(r'<[^>]+>', ' ', body)
+    body = re.sub(r'\s+', ' ', body).strip()[:2000]
+
+    # 同一ドメインの内部リンクを抽出（最大5件）
+    links = []
+    if base_url:
+        base_domain = urlparse(base_url).netloc
+        for href in re.findall(r'<a[^>]+href=["\'](.*?)["\']', html, re.IGNORECASE):
+            full = urljoin(base_url, href)
+            parsed = urlparse(full)
+            if parsed.netloc == base_domain and parsed.path not in ('/', '') and full != base_url:
+                clean = f'{parsed.scheme}://{parsed.netloc}{parsed.path}'
+                if clean not in links:
+                    links.append(clean)
+            if len(links) >= 5:
+                break
+
+    return title, desc, body, links
+
+
 def fetch_url_summary(url: str) -> str:
-    """URLのページ内容を取得してClaudeで要約"""
+    """URLのページ内容を取得し、1階層内部リンクも辿ってClaudeで要約"""
+    ua = {'User-Agent': 'Mozilla/5.0'}
     try:
-        res = requests.get(url, timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
+        res = requests.get(url, timeout=10, headers=ua)
         res.raise_for_status()
-        html = res.text
-
-        # タイトル抽出
-        title_m = re.search(r'<title[^>]*>(.*?)</title>', html, re.IGNORECASE | re.DOTALL)
-        title = re.sub(r'\s+', ' ', title_m.group(1)).strip() if title_m else ''
-
-        # meta description 抽出
-        desc_m = re.search(r'<meta[^>]+name=["\']description["\'][^>]+content=["\'](.*?)["\']',
-                           html, re.IGNORECASE)
-        desc = desc_m.group(1).strip() if desc_m else ''
-
-        # OGP description をフォールバックに
-        if not desc:
-            og_m = re.search(r'<meta[^>]+property=["\']og:description["\'][^>]+content=["\'](.*?)["\']',
-                             html, re.IGNORECASE)
-            desc = og_m.group(1).strip() if og_m else ''
-
-        # 本文テキスト（script/style除去後）
-        body = re.sub(r'<(script|style)[^>]*>.*?</\1>', ' ', html, flags=re.IGNORECASE | re.DOTALL)
-        body = re.sub(r'<[^>]+>', ' ', body)
-        body = re.sub(r'\s+', ' ', body).strip()[:2000]
-
-        context = f'タイトル: {title}\n説明: {desc}\n本文抜粋: {body}' if (title or desc) else body
-        if not context.strip():
-            return '（ページ内容を取得できませんでした）'
-
+        title, desc, body, child_links = _extract_page_text(res.text, url)
     except Exception as e:
         return f'（URL取得失敗: {e}）'
+
+    # 子ページも取得してコンテンツを補完
+    child_texts = []
+    for link in child_links:
+        try:
+            r = requests.get(link, timeout=8, headers=ua)
+            r.raise_for_status()
+            c_title, c_desc, c_body, _ = _extract_page_text(r.text)
+            snippet = ' '.join(filter(None, [c_title, c_desc, c_body]))[:800]
+            if snippet.strip():
+                child_texts.append(f'[{link}]\n{snippet}')
+        except Exception:
+            pass
+
+    context_parts = [f'タイトル: {title}', f'説明: {desc}', f'本文: {body}']
+    if child_texts:
+        context_parts.append('--- 内部ページ ---\n' + '\n\n'.join(child_texts))
+    context = '\n'.join(filter(lambda x: x.split(': ', 1)[-1].strip(), context_parts))
+
+    if not context.strip():
+        return '（ページ内容を取得できませんでした）'
 
     client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
     msg = client.messages.create(
         model='claude-haiku-4-5-20251001',
-        max_tokens=400,
+        max_tokens=500,
         messages=[{
             'role': 'user',
             'content': URL_SUMMARY_PROMPT.format(content=context)
