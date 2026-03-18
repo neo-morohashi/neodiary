@@ -35,22 +35,39 @@ FILENAME_RE = re.compile(r'^(\d{4}-\d{2}-\d{2})_\d{6}\.txt$')
 URL_RE = re.compile(r'https?://[^\s\)\]>]+')
 
 JOURNAL_PROMPT = """\
-あなたは日記アシスタントです。以下の入力を整形して追記用のMarkdownブロックだけを返してください。説明文・コードブロック記法は不要です。
+あなたは日記アシスタントです。{date}の日記テキストを解析し、各セクションに振り分けてください。
+コードブロックや説明文なしでJSONのみ返してください。
 
-## ユーザーの入力（複数エントリがある場合はまとめて処理）
+## 入力テキスト
 {input}
 
-## 出力フォーマット（厳守）
-以下の形式で、追記するブロックのみを返す。既存ファイルの内容は含めない。
+## 出力JSON
+{{
+  "memo": "テンプレートに当てはまらない自由なメモ・出来事・感想（そのまま記述）",
+  "tags": [],
+  "energy": 3,
+  "output_candidate": false,
+  "routine": {{
+    "wakeup":         "起床時刻（例: 7時）または空文字",
+    "sleep":          "睡眠時間（例: 7時間）または空文字",
+    "exercise":       "運動内容（例: 5km/30分）または空文字",
+    "breakfast":      "朝食内容または空文字",
+    "lunch":          "ランチ内容または空文字",
+    "dinner":         "夕食内容または空文字",
+    "project":        "作業時間（例: 3時間）または空文字",
+    "energy_morning": "朝のエネルギー 1〜5 または空文字",
+    "energy_night":   "夜のエネルギー 1〜5 または空文字"
+  }},
+  "happy": ["嬉しいこと1または空文字", "嬉しいこと2または空文字", "嬉しいこと3または空文字"],
+  "want":  ["やりたいこと1または空文字", "やりたいこと2または空文字", "やりたいこと3または空文字"]
+}}
 
-### 📝 モバイルメモ ({date})
-
-**口頭メモ**
-（出来事・感想・食事・運動など箇条書き）
-
-**タグ候補:** (work/mercer, personal/triathlon など該当するもの)
-**energy:** (1〜5)
-**output_candidate:** (true/false)
+## ルール
+- 言及がないフィールドは空文字 "" にする
+- memo には上記フィールドに含まれない内容のみ入れる（重複禁止）
+- tags は次から複数選択: work/mercer, work/client/名前, work/bd, work/research, work/thought_leadership, personal/triathlon, personal/book, personal/dog, personal/realestate, personal/reflection
+- energy: 全体的なエネルギーレベル（1=低調, 5=充実）
+- output_candidate: thought_leadershipネタ・note記事候補があれば true
 """
 
 URL_SUMMARY_PROMPT = """\
@@ -348,27 +365,155 @@ def enrich_with_url_summaries(text: str) -> str:
     return text + '\n\n' + '\n\n'.join(summaries)
 
 
-def format_with_claude(date_str: str, raw_entries: str) -> str:
-    """Claude で追記用ブロックに整形"""
-    client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
-    msg = client.messages.create(
+ROUTINE_PATTERNS = {
+    'wakeup':         r'- \[ \] 起床:',
+    'sleep':          r'- \[ \] 睡眠:',
+    'exercise':       r'- \[ \] 運動:',
+    'breakfast':      r'- \[ \] 朝食:',
+    'lunch':          r'- \[ \] ランチ:',
+    'dinner':         r'- \[ \] 夕食:',
+    'project':        r'- \[ \] プロジェクト作業:',
+    'energy_morning': r'- \[ \] エネルギー（朝）',
+    'energy_night':   r'- \[ \] エネルギー（夜）',
+}
+ROUTINE_LABELS = {
+    'wakeup':         '起床',
+    'sleep':          '睡眠',
+    'exercise':       '運動',
+    'breakfast':      '朝食',
+    'lunch':          'ランチ',
+    'dinner':         '夕食',
+    'project':        'プロジェクト作業',
+    'energy_morning': 'エネルギー（朝）',
+    'energy_night':   'エネルギー（夜）',
+}
+
+
+def format_with_claude(date_str: str, raw_entries: str) -> dict:
+    """Claude で日記テキストを構造化JSON に整形"""
+    import json
+    ai_client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
+    msg = ai_client.messages.create(
         model='claude-haiku-4-5-20251001',
-        max_tokens=1000,
+        max_tokens=1200,
         messages=[{
             'role': 'user',
             'content': JOURNAL_PROMPT.format(date=date_str, input=raw_entries)
         }]
     )
-    return msg.content[0].text.strip()
+    raw = msg.content[0].text.strip()
+    json_m = re.search(r'\{.*\}', raw, re.DOTALL)
+    if json_m:
+        try:
+            return json.loads(json_m.group(0))
+        except Exception:
+            pass
+    # フォールバック: 全文をmemoに
+    return {'memo': raw_entries, 'tags': [], 'energy': 3, 'output_candidate': False,
+            'routine': {}, 'happy': [], 'want': []}
 
 
-def append_to_diary(date_str: str, block: str) -> Path:
-    """既存ファイルがあれば追記、なければテンプレートで新規作成して追記"""
+def fill_diary_template(diary_path: Path, parsed: dict):
+    """diary templateの各セクションに値を埋め込む（未入力箇所のみ、上書き禁止）"""
+    content = diary_path.read_text(encoding='utf-8')
+    lines = content.splitlines()
+    routine    = parsed.get('routine', {})
+    happy_items = [h for h in parsed.get('happy', []) if h]
+    want_items  = [w for w in parsed.get('want',  []) if w]
+
+    in_happy = in_want = False
+    happy_idx = want_idx = 0
+    new_lines = []
+
+    for line in lines:
+        # ルーチン行: - [ ] のみ対象（- [x] は上書きしない）
+        matched = False
+        for key, pattern in ROUTINE_PATTERNS.items():
+            val = routine.get(key, '')
+            if val and re.search(pattern, line):
+                new_lines.append(f'- [x] {ROUTINE_LABELS[key]}: {val}')
+                matched = True
+                break
+        if matched:
+            continue
+
+        # セクション追跡
+        if re.search(r'## 😊|3つの嬉しいこと', line):
+            in_happy, in_want, happy_idx = True, False, 0
+        elif re.search(r'## 🎯|3つのやりたいこと', line):
+            in_want, in_happy, want_idx = True, False, 0
+        elif re.match(r'^## ', line):
+            in_happy = in_want = False
+
+        # 嬉しいこと: 空行（"N." のみ）のみ埋める
+        if in_happy and happy_idx < len(happy_items):
+            m = re.match(r'^(\d+)\.\s*$', line)
+            if m:
+                new_lines.append(f'{m.group(1)}. {happy_items[happy_idx]}')
+                happy_idx += 1
+                continue
+
+        # やりたいこと: 空行のみ埋める
+        if in_want and want_idx < len(want_items):
+            m = re.match(r'^(\d+)\.\s*$', line)
+            if m:
+                new_lines.append(f'{m.group(1)}. {want_items[want_idx]}')
+                want_idx += 1
+                continue
+
+        new_lines.append(line)
+
+    diary_path.write_text('\n'.join(new_lines) + '\n', encoding='utf-8')
+
+
+def append_to_memo_section(diary_path: Path, memo_text: str):
+    """口頭メモセクションに追記（上書きなし）"""
+    if not memo_text.strip():
+        return
+    content = diary_path.read_text(encoding='utf-8')
+    header = '## 口頭メモ'
+    idx = content.find(header)
+    if idx < 0:
+        with diary_path.open('a', encoding='utf-8') as f:
+            f.write(f'\n{memo_text.strip()}\n')
+        return
+    insert_pos = idx + len(header)
+    next_section = content.find('\n## ', insert_pos)
+    new_text = f'\n{memo_text.strip()}'
+    if next_section < 0:
+        content = content.rstrip() + new_text + '\n'
+    else:
+        content = content[:next_section] + new_text + content[next_section:]
+    diary_path.write_text(content, encoding='utf-8')
+
+
+def update_diary_frontmatter(diary_path: Path, parsed: dict):
+    """frontmatter の tags/energy/output_candidate を更新（デフォルト値のみ）"""
+    content = diary_path.read_text(encoding='utf-8')
+    new_tags = parsed.get('tags', [])
+    new_energy = parsed.get('energy', 3)
+    new_oc = parsed.get('output_candidate', False)
+
+    if new_tags:
+        tags_yaml = '\n'.join([f'  - {t}' for t in new_tags])
+        content = re.sub(r'tags:\s*\[\]', f'tags:\n{tags_yaml}', content, count=1)
+    if new_energy and new_energy != 3:
+        content = re.sub(r'^energy:\s*3\s*$', f'energy: {new_energy}', content,
+                         count=1, flags=re.MULTILINE)
+    if new_oc:
+        content = re.sub(r'^output_candidate:\s*false\s*$', 'output_candidate: true',
+                         content, count=1, flags=re.MULTILINE)
+    diary_path.write_text(content, encoding='utf-8')
+
+
+def process_diary_entry(date_str: str, parsed: dict) -> Path:
+    """diary fileを作成/更新: テンプレート埋め込み + memo追記"""
     diary_path = DIARY_DIR / f'{date_str}.md'
     if not diary_path.exists():
         diary_path.write_text(TEMPLATE.format(date=date_str), encoding='utf-8')
-    with diary_path.open('a', encoding='utf-8') as f:
-        f.write(f'\n{block}\n')
+    fill_diary_template(diary_path, parsed)
+    append_to_memo_section(diary_path, parsed.get('memo', ''))
+    update_diary_frontmatter(diary_path, parsed)
     return diary_path
 
 
@@ -398,9 +543,9 @@ def main():
 
             combined = '\n\n'.join(all_entries)
             enriched = enrich_with_url_summaries(combined)
-            block = format_with_claude(date_str, enriched)
-            diary_path = append_to_diary(date_str, block)
-            print(f'  → {diary_path} に追記しました')
+            parsed = format_with_claude(date_str, enriched)
+            diary_path = process_diary_entry(date_str, parsed)
+            print(f'  → {diary_path} を更新しました')
 
             for path, sha, name in file_shas:
                 delete_file(path, sha, date_str)
