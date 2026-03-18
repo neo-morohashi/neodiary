@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>日記メモ</title>
+<title>NeoBrain</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -12,204 +12,256 @@
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    padding: 16px;
-    position: relative;
   }
-  h1 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1d1d1f;
+
+  /* ── ヘッダー ── */
+  .header {
+    padding: 16px 16px 0;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .header h1 { font-size: 18px; font-weight: 700; color: #1d1d1f; }
+  .header .date { font-size: 13px; color: #6e6e73; margin-top: 2px; }
+  .settings-icon { font-size: 20px; cursor: pointer; color: #6e6e73; padding: 4px; }
+
+  /* ── タブ ── */
+  .tabs {
+    display: flex;
+    background: #e5e5ea;
+    border-radius: 10px;
+    padding: 3px;
+    margin: 0 16px 14px;
+  }
+  .tab {
+    flex: 1; padding: 8px;
+    text-align: center;
+    font-size: 14px; font-weight: 600;
+    border-radius: 8px; cursor: pointer;
+    color: #6e6e73;
+    transition: all 0.2s;
+    border: none; background: transparent;
+  }
+  .tab.active {
+    background: #fff; color: #1d1d1f;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+
+  /* ── コンテンツ ── */
+  .content {
+    flex: 1; padding: 0 16px 20px;
+    display: flex; flex-direction: column;
+  }
+  .panel { display: none; flex-direction: column; flex: 1; gap: 10px; }
+  .panel.active { display: flex; }
+
+  /* ── 設定パネル ── */
+  #settingsPanel {
+    display: none; background: #fff;
+    border: 1px solid #d2d2d7; border-radius: 12px;
+    padding: 16px; margin: 0 16px 12px;
+  }
+  #settingsPanel input {
+    width: 100%; padding: 10px 12px;
+    border: 1px solid #d2d2d7; border-radius: 8px;
+    font-size: 14px; margin: 6px 0 12px;
+  }
+  #settingsPanel label { font-size: 13px; color: #6e6e73; }
+
+  /* ── 入力共通 ── */
+  textarea, .text-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d2d2d7;
+    border-radius: 12px;
+    font-size: 16px; line-height: 1.5;
+    background: #fff; color: #1d1d1f;
+    outline: none; font-family: inherit;
+  }
+  textarea { resize: none; }
+  textarea:focus, .text-input:focus { border-color: #0071e3; }
+  .field-label {
+    font-size: 12px; font-weight: 600;
+    color: #6e6e73;
+    text-transform: uppercase; letter-spacing: 0.5px;
     margin-bottom: 4px;
   }
-  .date {
-    font-size: 13px;
-    color: #6e6e73;
-    margin-bottom: 16px;
-  }
-  textarea {
-    width: 100%;
-    flex: 1;
-    min-height: 180px;
-    padding: 14px;
-    border: 1px solid #d2d2d7;
-    border-radius: 12px;
-    font-size: 16px;
-    line-height: 1.6;
-    resize: vertical;
-    background: #fff;
-    color: #1d1d1f;
-    outline: none;
-    margin-bottom: 12px;
-  }
-  textarea:focus { border-color: #0071e3; }
+  .field { display: flex; flex-direction: column; }
 
-  /* 画像プレビューエリア */
-  #imagePreview {
-    display: none;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
+  /* ── 画像プレビュー ── */
+  .image-preview {
+    display: none; gap: 8px; flex-wrap: wrap;
   }
-  #imagePreview img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 8px;
+  .img-wrap { position: relative; display: inline-block; }
+  .img-wrap img {
+    width: 72px; height: 72px;
+    object-fit: cover; border-radius: 8px;
     border: 1px solid #d2d2d7;
-  }
-  .img-wrap {
-    position: relative;
-    display: inline-block;
   }
   .img-remove {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    background: #ff3b30;
-    color: #fff;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
-    line-height: 20px;
-    text-align: center;
-    cursor: pointer;
-    border: none;
-    padding: 0;
-    font-weight: bold;
+    position: absolute; top: -6px; right: -6px;
+    background: #ff3b30; color: #fff;
+    border-radius: 50%; width: 20px; height: 20px;
+    font-size: 12px; line-height: 20px; text-align: center;
+    cursor: pointer; border: none; font-weight: bold;
   }
 
-  .buttons {
-    display: flex;
-    gap: 10px;
+  /* ── タグチップ ── */
+  .tag-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    padding: 5px 11px;
+    border-radius: 20px; font-size: 12px; font-weight: 600;
+    border: 1.5px solid #d2d2d7;
+    background: #fff; color: #6e6e73;
+    cursor: pointer; user-select: none;
+    transition: all 0.15s;
   }
+  .chip.selected { border-color: #0071e3; background: #e8f0fe; color: #0071e3; }
+
+  /* ── ボタン ── */
+  .buttons { display: flex; gap: 8px; }
   button {
-    flex: 1;
-    padding: 14px;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s;
+    flex: 1; padding: 14px;
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.15s;
   }
   button:active { opacity: 0.7; }
-  #micBtn {
-    background: #f2f2f7;
-    color: #1d1d1f;
-    flex: 0 0 54px;
-    font-size: 22px;
+  .btn-icon {
+    flex: 0 0 52px; font-size: 20px;
+    background: #f2f2f7; color: #1d1d1f;
   }
-  #micBtn.recording { background: #ff3b30; color: #fff; }
-  #photoBtn {
-    background: #f2f2f7;
-    color: #1d1d1f;
-    flex: 0 0 54px;
-    font-size: 22px;
+  .btn-icon.recording { background: #ff3b30; color: #fff; }
+  .btn-primary { background: #0071e3; color: #fff; }
+  .btn-primary:disabled { background: #aeaeb2; cursor: default; }
+  .btn-green { background: #34c759; color: #fff; }
+  .btn-green:disabled { background: #aeaeb2; cursor: default; }
+  .btn-settings {
+    background: #34c759; color: #fff;
+    padding: 10px; border-radius: 8px;
+    font-size: 14px; width: 100%;
+    border: none; font-weight: 600;
   }
-  #submitBtn {
-    background: #0071e3;
-    color: #fff;
-  }
-  #submitBtn:disabled { background: #aeaeb2; cursor: default; }
+
+  /* ── ステータス ── */
   .status {
-    margin-top: 14px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    font-size: 14px;
-    display: none;
+    padding: 12px 14px; border-radius: 10px;
+    font-size: 14px; display: none;
   }
   .status.ok  { background: #d1f5d3; color: #1a5c1f; }
   .status.err { background: #ffd2d2; color: #8b0000; }
-  .settings-icon {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    font-size: 20px;
-    cursor: pointer;
-    color: #6e6e73;
-  }
-  #settingsPanel {
-    display: none;
-    background: #fff;
-    border: 1px solid #d2d2d7;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-  #settingsPanel input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d2d2d7;
-    border-radius: 8px;
-    font-size: 14px;
-    margin-top: 6px;
-    margin-bottom: 12px;
-  }
-  #settingsPanel label { font-size: 13px; color: #6e6e73; }
-  #saveSettingsBtn {
-    background: #34c759;
-    color: #fff;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 14px;
-    width: 100%;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-  }
 </style>
 </head>
 <body>
 
-<span class="settings-icon" onclick="toggleSettings()">⚙️</span>
+<!-- ヘッダー -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>🧠 NeoBrain</h1>
+      <div class="date" id="dateLabel"></div>
+    </div>
+    <span class="settings-icon" onclick="toggleSettings()">⚙️</span>
+  </div>
+</div>
 
-<h1>📓 日記メモ</h1>
-<div class="date" id="dateLabel"></div>
-
+<!-- 設定パネル -->
 <div id="settingsPanel">
   <label>GitHub Personal Access Token</label>
   <input type="password" id="inputToken" placeholder="ghp_xxxxxxxxxx">
   <label>リポジトリ (owner/repo)</label>
-  <input type="text" id="inputRepo" placeholder="neo/diary-inbox">
-  <button id="saveSettingsBtn" onclick="saveSettings()">保存</button>
+  <input type="text" id="inputRepo" placeholder="neo/neodiary">
+  <button class="btn-settings" onclick="saveSettings()">保存</button>
 </div>
 
-<textarea id="memo" placeholder="今日の記録を入力（音声入力も使えます）"></textarea>
-
-<!-- 画像プレビュー -->
-<div id="imagePreview"></div>
-
-<input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="onFilesSelected(event)">
-
-<div class="buttons">
-  <button id="micBtn" onclick="toggleMic()" title="音声入力">🎤</button>
-  <button id="photoBtn" onclick="document.getElementById('fileInput').click()" title="写真を添付">📷</button>
-  <button id="submitBtn" onclick="submitEntry()">送信</button>
+<!-- タブ -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('diary', this)">📓 日記</button>
+  <button class="tab" onclick="switchTab('memo', this)">📋 仕事メモ</button>
 </div>
 
-<div class="status" id="status"></div>
+<!-- コンテンツ -->
+<div class="content">
+
+  <!-- 📓 日記パネル -->
+  <div class="panel active" id="panel-diary">
+    <textarea id="diary-text" rows="7" placeholder="今日の記録を入力（音声入力も使えます）"></textarea>
+    <div class="image-preview" id="diary-preview"></div>
+    <input type="file" id="diary-file-input" accept="image/*" multiple style="display:none" onchange="onFilesSelected(event,'diary')">
+    <div class="buttons">
+      <button class="btn-icon" id="diary-mic" onclick="toggleMic('diary')" title="音声入力">🎤</button>
+      <button class="btn-icon" onclick="document.getElementById('diary-file-input').click()" title="写真">📷</button>
+      <button class="btn-primary" id="diary-submit" onclick="submitDiary()">送信</button>
+    </div>
+    <div class="status" id="diary-status"></div>
+  </div>
+
+  <!-- 📋 仕事メモパネル -->
+  <div class="panel" id="panel-memo">
+    <div class="field">
+      <div class="field-label">クライアント</div>
+      <input type="text" class="text-input" id="memo-client" placeholder="例: 弥生、Mercer内部、など">
+    </div>
+    <div class="field">
+      <div class="field-label">メモ</div>
+      <textarea id="memo-text" rows="5" placeholder="案件・気づき・URLなど自由に入力"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-label">タグ</div>
+      <div class="tag-chips" id="tag-chips">
+        <div class="chip" data-tag="work/mercer">mercer</div>
+        <div class="chip" data-tag="work/bd">bd</div>
+        <div class="chip" data-tag="work/research">research</div>
+        <div class="chip" data-tag="work/thought_leadership">thought</div>
+        <div class="chip" data-tag="personal/triathlon">triathlon</div>
+        <div class="chip" data-tag="personal/book">book</div>
+        <div class="chip" data-tag="personal/reflection">reflection</div>
+      </div>
+    </div>
+    <div class="image-preview" id="memo-preview"></div>
+    <input type="file" id="memo-file-input" accept="image/*,application/pdf,.doc,.docx,.ppt,.pptx" multiple style="display:none" onchange="onFilesSelected(event,'memo')">
+    <div class="buttons">
+      <button class="btn-icon" id="memo-mic" onclick="toggleMic('memo')" title="音声入力">🎤</button>
+      <button class="btn-icon" onclick="document.getElementById('memo-file-input').click()" title="ファイル添付">📎</button>
+      <button class="btn-green" id="memo-submit" onclick="submitMemo()">保存</button>
+    </div>
+    <div class="status" id="memo-status"></div>
+  </div>
+
+</div>
 
 <script>
-// ── 日付表示 ──
+// ── 日付 ──
 const today = new Date();
 const pad = n => String(n).padStart(2, '0');
 const dateStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
 const timeStr = `${pad(today.getHours())}:${pad(today.getMinutes())}`;
-document.getElementById('dateLabel').textContent = `${dateStr}`;
+const tsStr   = `${pad(today.getHours())}${pad(today.getMinutes())}${pad(today.getSeconds())}`;
+document.getElementById('dateLabel').textContent = dateStr;
 
-// ── URLパラメータからURLを受け取る（ショートカット連携）──
+// ── URLパラメータ（ショートカット連携）──
 (function() {
   const search = location.search;
   const prefix = '?url=';
   if (search.startsWith(prefix)) {
     const sharedUrl = decodeURIComponent(search.slice(prefix.length));
-    document.getElementById('memo').value = sharedUrl;
+    document.getElementById('diary-text').value = sharedUrl;
     history.replaceState(null, '', location.pathname);
   }
 })();
 
-// ── 設定の読み書き ──
+// ── タブ切り替え ──
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+// ── 設定 ──
 function loadSettings() {
   document.getElementById('inputToken').value = localStorage.getItem('gh_token') || '';
   document.getElementById('inputRepo').value  = localStorage.getItem('gh_repo')  || '';
@@ -217,7 +269,7 @@ function loadSettings() {
 function saveSettings() {
   localStorage.setItem('gh_token', document.getElementById('inputToken').value.trim());
   localStorage.setItem('gh_repo',  document.getElementById('inputRepo').value.trim());
-  showStatus('✅ 設定を保存しました', 'ok');
+  showStatus('diary', '✅ 設定を保存しました', 'ok');
   setTimeout(() => document.getElementById('settingsPanel').style.display = 'none', 800);
 }
 function toggleSettings() {
@@ -227,179 +279,187 @@ function toggleSettings() {
 }
 
 // ── ステータス表示 ──
-function showStatus(msg, type) {
-  const el = document.getElementById('status');
+function showStatus(tab, msg, type) {
+  const el = document.getElementById(`${tab}-status`);
   el.textContent = msg;
   el.className = `status ${type}`;
   el.style.display = 'block';
   if (type === 'ok') setTimeout(() => el.style.display = 'none', 2500);
 }
 
+// ── タグチップ ──
+document.querySelectorAll('.chip').forEach(c => {
+  c.addEventListener('click', () => c.classList.toggle('selected'));
+});
+function getSelectedTags() {
+  return Array.from(document.querySelectorAll('.chip.selected')).map(c => c.dataset.tag);
+}
+
 // ── 音声入力 ──
-let recognition = null;
-let isRecording = false;
-
-function toggleMic() {
+let recognitions = {};
+function toggleMic(tab) {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    showStatus('このブラウザは音声入力に対応していません', 'err');
+    showStatus(tab, 'このブラウザは音声入力に対応していません', 'err');
     return;
   }
-  if (isRecording) {
-    recognition.stop();
+  const btn = document.getElementById(`${tab}-mic`);
+  if (recognitions[tab]) {
+    recognitions[tab].stop();
     return;
   }
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
-  recognition.lang = 'ja-JP';
-  recognition.continuous = true;
-  recognition.interimResults = false;
-
-  recognition.onstart = () => {
-    isRecording = true;
-    document.getElementById('micBtn').classList.add('recording');
-    document.getElementById('micBtn').textContent = '⏹';
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const r = new SR();
+  r.lang = 'ja-JP'; r.continuous = true; r.interimResults = false;
+  r.onstart = () => { btn.classList.add('recording'); btn.textContent = '⏹'; };
+  r.onresult = e => {
+    const t = Array.from(e.results).map(r => r[0].transcript).join('');
+    const ta = document.getElementById(`${tab}-text`);
+    ta.value = ta.value ? ta.value + '\n' + t : t;
   };
-  recognition.onresult = e => {
-    const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
-    const ta = document.getElementById('memo');
-    ta.value = ta.value ? ta.value + '\n' + transcript : transcript;
-  };
-  recognition.onend = () => {
-    isRecording = false;
-    document.getElementById('micBtn').classList.remove('recording');
-    document.getElementById('micBtn').textContent = '🎤';
-  };
-  recognition.start();
+  r.onend = () => { btn.classList.remove('recording'); btn.textContent = '🎤'; delete recognitions[tab]; };
+  recognitions[tab] = r;
+  r.start();
 }
 
 // ── 画像添付 ──
-let pendingFiles = []; // { file, dataUrl, b64 }
+const pendingFiles = { diary: [], memo: [] };
 
-function onFilesSelected(event) {
-  const files = Array.from(event.target.files);
-  event.target.value = '';
-  files.forEach(file => {
+function onFilesSelected(event, tab) {
+  Array.from(event.target.files).forEach(file => {
     const reader = new FileReader();
     reader.onload = e => {
-      const dataUrl = e.target.result;
-      const b64 = dataUrl.split(',')[1];
-      pendingFiles.push({ file, dataUrl, b64 });
-      renderPreviews();
+      pendingFiles[tab].push({ file, dataUrl: e.target.result, b64: e.target.result.split(',')[1] });
+      renderPreviews(tab);
     };
     reader.readAsDataURL(file);
   });
+  event.target.value = '';
 }
 
-function renderPreviews() {
-  const area = document.getElementById('imagePreview');
+function renderPreviews(tab) {
+  const area = document.getElementById(`${tab}-preview`);
   area.innerHTML = '';
-  if (pendingFiles.length === 0) {
-    area.style.display = 'none';
-    return;
-  }
+  const files = pendingFiles[tab];
+  if (!files.length) { area.style.display = 'none'; return; }
   area.style.display = 'flex';
-  pendingFiles.forEach((item, idx) => {
+  files.forEach((item, idx) => {
     const wrap = document.createElement('div');
     wrap.className = 'img-wrap';
-    const img = document.createElement('img');
-    img.src = item.dataUrl;
+    const isImage = item.file.type.startsWith('image/');
+    if (isImage) {
+      const img = document.createElement('img');
+      img.src = item.dataUrl;
+      wrap.appendChild(img);
+    } else {
+      const label = document.createElement('div');
+      label.style.cssText = 'width:72px;height:72px;background:#f2f2f7;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6e6e73;text-align:center;padding:4px;word-break:break-all;border:1px solid #d2d2d7';
+      label.textContent = item.file.name;
+      wrap.appendChild(label);
+    }
     const btn = document.createElement('button');
-    btn.className = 'img-remove';
-    btn.textContent = '×';
-    btn.onclick = () => { pendingFiles.splice(idx, 1); renderPreviews(); };
-    wrap.appendChild(img);
+    btn.className = 'img-remove'; btn.textContent = '×';
+    btn.onclick = () => { pendingFiles[tab].splice(idx, 1); renderPreviews(tab); };
     wrap.appendChild(btn);
     area.appendChild(wrap);
   });
 }
 
-async function uploadImage(token, repo, file, b64, ts, idx) {
-  const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
-  const filePath = `inbox/images/${dateStr}_${ts}_${idx}.${ext}`;
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-  const res = await fetch(apiUrl, {
-    method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      message: `diary: image ${dateStr} ${timeStr}`,
-      content: b64,
-    }),
+// ── GitHub API共通 ──
+function ghHeaders(token) {
+  return { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' };
+}
+async function ghPut(token, repo, path, message, b64) {
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+    method: 'PUT', headers: ghHeaders(token),
+    body: JSON.stringify({ message, content: b64 }),
   });
-  if (!res.ok) throw new Error(`画像アップロード失敗: ${res.status}`);
-  const data = await res.json();
-  return data.content.download_url;
+  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+  return res.json();
 }
 
-// ── GitHub への保存 ──
-async function submitEntry() {
-  const text = document.getElementById('memo').value.trim();
-  if (!text && pendingFiles.length === 0) {
-    showStatus('テキストまたは画像を入力してください', 'err');
-    return;
+async function uploadFiles(token, repo, files, folder, ts) {
+  const urls = [];
+  for (let i = 0; i < files.length; i++) {
+    const { file, b64 } = files[i];
+    const ext = file.name.split('.').pop().toLowerCase() || 'bin';
+    const path = `${folder}/${dateStr}_${ts}_${i+1}.${ext}`;
+    const data = await ghPut(token, repo, path, `attach: ${dateStr} ${timeStr}`, b64);
+    urls.push(data.content.download_url);
   }
+  return urls;
+}
 
+// ── 日記送信 ──
+async function submitDiary() {
+  const text = document.getElementById('diary-text').value.trim();
+  if (!text && !pendingFiles.diary.length) {
+    showStatus('diary', 'テキストまたは画像を入力してください', 'err'); return;
+  }
   const token = localStorage.getItem('gh_token');
   const repo  = localStorage.getItem('gh_repo');
-  if (!token || !repo) {
-    showStatus('⚙️ 設定からTokenとリポジトリを入力してください', 'err');
-    toggleSettings();
-    return;
-  }
+  if (!token || !repo) { showStatus('diary', '⚙️ 設定からTokenとリポジトリを入力してください', 'err'); toggleSettings(); return; }
 
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = '送信中…';
-
-  const ts = `${pad(today.getHours())}${pad(today.getMinutes())}${pad(today.getSeconds())}`;
+  const btn = document.getElementById('diary-submit');
+  btn.disabled = true; btn.textContent = '送信中…';
 
   try {
-    // 画像を先にアップロード
-    const imageUrls = [];
-    for (let i = 0; i < pendingFiles.length; i++) {
-      const { file, b64 } = pendingFiles[i];
-      showStatus(`📷 画像をアップロード中… (${i+1}/${pendingFiles.length})`, 'ok');
-      const url = await uploadImage(token, repo, file, b64, ts, i+1);
-      imageUrls.push(url);
+    let imageUrls = [];
+    if (pendingFiles.diary.length) {
+      showStatus('diary', `📷 画像アップロード中…`, 'ok');
+      imageUrls = await uploadFiles(token, repo, pendingFiles.diary, 'inbox/images', tsStr);
     }
-
-    // テキストエントリに画像URLを付記
     let entry = `[${timeStr}]\n${text}\n`;
-    if (imageUrls.length > 0) {
-      entry += '\n' + imageUrls.map(u => `![画像](${u})`).join('\n') + '\n';
-    }
+    if (imageUrls.length) entry += '\n' + imageUrls.map(u => `![画像](${u})`).join('\n') + '\n';
 
-    // テキストファイルを保存
-    const filePath = `inbox/${dateStr}_${ts}.txt`;
-    const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-    const putRes = await fetch(apiUrl, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: `diary: ${dateStr} ${timeStr}`,
-        content: btoa(unescape(encodeURIComponent(entry))),
-      }),
-    });
+    await ghPut(token, repo, `inbox/${dateStr}_${tsStr}.txt`,
+      `diary: ${dateStr} ${timeStr}`, btoa(unescape(encodeURIComponent(entry))));
 
-    if (!putRes.ok) throw new Error(`GitHub API error: ${putRes.status}`);
-
-    showStatus(`✅ 保存しました（${dateStr} ${timeStr}）`, 'ok');
-    document.getElementById('memo').value = '';
-    pendingFiles = [];
-    renderPreviews();
-
-  } catch (e) {
-    showStatus(`❌ 送信失敗: ${e.message}`, 'err');
+    showStatus('diary', `✅ 保存しました（${dateStr} ${timeStr}）`, 'ok');
+    document.getElementById('diary-text').value = '';
+    pendingFiles.diary = []; renderPreviews('diary');
+  } catch(e) {
+    showStatus('diary', `❌ 送信失敗: ${e.message}`, 'err');
   } finally {
-    btn.disabled = false;
-    btn.textContent = '送信';
+    btn.disabled = false; btn.textContent = '送信';
+  }
+}
+
+// ── 仕事メモ送信 ──
+async function submitMemo() {
+  const text   = document.getElementById('memo-text').value.trim();
+  const client = document.getElementById('memo-client').value.trim() || 'internal';
+  if (!text && !pendingFiles.memo.length) {
+    showStatus('memo', 'メモを入力してください', 'err'); return;
+  }
+  const token = localStorage.getItem('gh_token');
+  const repo  = localStorage.getItem('gh_repo');
+  if (!token || !repo) { showStatus('memo', '⚙️ 設定からTokenとリポジトリを入力してください', 'err'); toggleSettings(); return; }
+
+  const btn = document.getElementById('memo-submit');
+  btn.disabled = true; btn.textContent = '保存中…';
+
+  try {
+    let fileUrls = [];
+    if (pendingFiles.memo.length) {
+      showStatus('memo', `📎 ファイルアップロード中…`, 'ok');
+      fileUrls = await uploadFiles(token, repo, pendingFiles.memo, 'workmemo/files', tsStr);
+    }
+    const tags = getSelectedTags();
+    let entry = `[CLIENT: ${client}]\n[TAGS: ${tags.join(', ')}]\n[TIME: ${timeStr}]\n${text}\n`;
+    if (fileUrls.length) entry += '\n' + fileUrls.map(u => `[FILE: ${u}]`).join('\n') + '\n';
+
+    await ghPut(token, repo, `workmemo/${dateStr}_${tsStr}.txt`,
+      `memo: ${client} ${dateStr} ${timeStr}`, btoa(unescape(encodeURIComponent(entry))));
+
+    showStatus('memo', `✅ 保存しました（${client}）`, 'ok');
+    document.getElementById('memo-text').value = '';
+    document.getElementById('memo-client').value = '';
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    pendingFiles.memo = []; renderPreviews('memo');
+  } catch(e) {
+    showStatus('memo', `❌ 送信失敗: ${e.message}`, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = '保存';
   }
 }
 </script>

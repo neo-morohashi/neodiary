@@ -3,13 +3,15 @@
 diary-web inbox puller
 GitHub の inbox/{YYYY-MM-DD_HHMMSS}.txt を読み取り、
 Claude で処理して NeoBrain/diary/ に追記する。
+workmemo/{YYYY-MM-DD_HHMMSS}.txt も処理して
+NeoBrain/context/work/ に保存する。
 """
 import os
 import re
 import base64
 from collections import defaultdict
 from pathlib import Path
-from datetime import datetime
+from datetime import date as date_type
 import requests
 import anthropic
 from dotenv import load_dotenv
@@ -19,6 +21,7 @@ load_dotenv(Path(__file__).parent / '.env')
 GITHUB_TOKEN  = os.environ['GITHUB_TOKEN']
 GITHUB_REPO   = os.environ['GITHUB_REPO']
 DIARY_DIR     = Path.home() / 'Documents/NeoBrain/diary'
+WORK_DIR      = Path.home() / 'Documents/NeoBrain/context/work'
 ANTHROPIC_KEY = os.environ['ANTHROPIC_API_KEY']
 
 GH_API = 'https://api.github.com'
@@ -29,7 +32,7 @@ HEADERS = {
 
 # ファイル名パターン: YYYY-MM-DD_HHMMSS.txt
 FILENAME_RE = re.compile(r'^(\d{4}-\d{2}-\d{2})_\d{6}\.txt$')
-URL_RE = re.compile(r'https?://\S+')
+URL_RE = re.compile(r'https?://[^\s\)\]>]+')
 
 JOURNAL_PROMPT = """\
 あなたは日記アシスタントです。以下の入力を整形して追記用のMarkdownブロックだけを返してください。説明文・コードブロック記法は不要です。
@@ -92,6 +95,24 @@ output_candidate: false
 """
 
 
+WORKMEMO_PROMPT = """\
+あなたは仕事メモアシスタントです。以下のメモを整理してください。
+説明文・コードブロック記法は不要です。以下の形式でJSONのみ返してください。
+
+## 入力メモ
+{input}
+
+## 出力フォーマット（厳守）
+{{
+  "project": "案件名・トピック（推定）",
+  "summary": "1〜2文の要旨",
+  "content": "整理したメモ本文（箇条書き、Markdown）",
+  "next_actions": "ネクストアクションがあれば箇条書き、なければ空文字",
+  "output_candidate": false
+}}
+"""
+
+
 def list_inbox_files():
     """inbox/ 配下のファイル一覧を取得"""
     url = f'{GH_API}/repos/{GITHUB_REPO}/contents/inbox'
@@ -100,6 +121,116 @@ def list_inbox_files():
         return []
     res.raise_for_status()
     return [f for f in res.json() if FILENAME_RE.match(f['name'])]
+
+
+def list_workmemo_files():
+    """workmemo/ 配下の .txt ファイル一覧を取得"""
+    url = f'{GH_API}/repos/{GITHUB_REPO}/contents/workmemo'
+    res = requests.get(url, headers=HEADERS)
+    if res.status_code == 404:
+        return []
+    res.raise_for_status()
+    return [f for f in res.json() if FILENAME_RE.match(f['name'])]
+
+
+def parse_workmemo_headers(content: str) -> dict:
+    """[CLIENT:], [TAGS:], [TIME:], [FILE:] ヘッダーを解析してメタデータを返す"""
+    client = 'internal'
+    tags = []
+    file_urls = []
+    lines = content.splitlines()
+    body_lines = []
+    for line in lines:
+        m_client = re.match(r'^\[CLIENT:\s*(.*?)\]', line)
+        m_tags   = re.match(r'^\[TAGS:\s*(.*?)\]', line)
+        m_file   = re.match(r'^\[FILE:\s*(.*?)\]', line)
+        if m_client:
+            client = m_client.group(1).strip() or 'internal'
+        elif m_tags:
+            tags = [t.strip() for t in m_tags.group(1).split(',') if t.strip()]
+        elif m_file:
+            u = m_file.group(1).strip()
+            if u:
+                file_urls.append(u)
+        elif re.match(r'^\[TIME:', line):
+            pass  # 時刻情報は無視
+        else:
+            body_lines.append(line)
+    body = '\n'.join(body_lines).strip()
+    return {'client': client, 'tags': tags, 'file_urls': file_urls, 'body': body}
+
+
+def format_workmemo_with_claude(client: str, tags: list, body: str) -> dict:
+    """Claude でワークメモを構造化"""
+    import json
+    input_text = f'クライアント: {client}\nタグ: {", ".join(tags)}\n\n{body}'
+    ai_client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
+    msg = ai_client.messages.create(
+        model='claude-haiku-4-5-20251001',
+        max_tokens=800,
+        messages=[{
+            'role': 'user',
+            'content': WORKMEMO_PROMPT.format(input=input_text)
+        }]
+    )
+    raw = msg.content[0].text.strip()
+    # JSONブロックがあれば抽出
+    json_m = re.search(r'\{.*\}', raw, re.DOTALL)
+    if json_m:
+        try:
+            return json.loads(json_m.group(0))
+        except Exception:
+            pass
+    return {'project': 'メモ', 'summary': body[:80], 'content': body,
+            'next_actions': '', 'output_candidate': False}
+
+
+def save_workmemo(date_str: str, client: str, tags: list, parsed: dict, body: str, file_urls: list) -> Path:
+    """ワークメモを WORK_DIR に保存"""
+    WORK_DIR.mkdir(parents=True, exist_ok=True)
+    project = parsed.get('project', 'memo')
+    slug = re.sub(r'[^\w\-]', '-', project.lower())[:30].strip('-')
+    filename = f'{date_str}-{client.lower()}-{slug}.md'
+    filepath = WORK_DIR / filename
+    # 重複回避
+    counter = 1
+    base = str(filepath).replace('.md', '')
+    while filepath.exists():
+        filepath = Path(f'{base}-{counter}.md')
+        counter += 1
+
+    tags_yaml = '\n'.join([f'  - {t}' for t in tags]) if tags else '  []'
+    urls_md = '\n'.join([f'- {u}' for u in file_urls]) if file_urls else 'なし'
+    output_candidate = parsed.get('output_candidate', False)
+    summary = parsed.get('summary', '')
+    content = parsed.get('content', body)
+    next_actions = parsed.get('next_actions', '')
+
+    frontmatter = f"""---
+date: {date_str}
+type: context
+client: {client}
+project: {project}
+tags:
+{tags_yaml}
+output_candidate: {"true" if output_candidate else "false"}
+---"""
+
+    body_md = f"""# {project}
+
+{summary}
+
+## メモ
+
+{content}
+"""
+    if next_actions and next_actions.strip():
+        body_md += f'\n## ネクストアクション\n\n{next_actions}\n'
+    if file_urls:
+        body_md += f'\n## 添付ファイル\n\n{urls_md}\n'
+
+    filepath.write_text(frontmatter + '\n\n' + body_md, encoding='utf-8')
+    return filepath
 
 
 def get_file(path: str):
@@ -243,46 +374,67 @@ def append_to_diary(date_str: str, block: str) -> Path:
 
 def main():
     DIARY_DIR.mkdir(parents=True, exist_ok=True)
-    files = list_inbox_files()
+    WORK_DIR.mkdir(parents=True, exist_ok=True)
 
+    # ── 日記 inbox 処理 ──
+    files = list_inbox_files()
     if not files:
         print('inbox は空です。')
-        return
+    else:
+        by_date = defaultdict(list)
+        for f in files:
+            m = FILENAME_RE.match(f['name'])
+            if m:
+                by_date[m.group(1)].append(f)
 
-    # 日付ごとにグループ化（YYYY-MM-DD_HHMMSS.txt → date_str）
-    by_date = defaultdict(list)
-    for f in files:
-        m = FILENAME_RE.match(f['name'])
-        if m:
-            by_date[m.group(1)].append(f)
+        for date_str, date_files in sorted(by_date.items()):
+            print(f'[diary] 処理中: {date_str} ({len(date_files)}件) ...')
+            all_entries = []
+            file_shas = []
+            for f in date_files:
+                raw_content, sha = get_file(f['path'])
+                all_entries.append(raw_content.strip())
+                file_shas.append((f['path'], sha, f['name']))
 
-    for date_str, date_files in sorted(by_date.items()):
-        print(f'処理中: {date_str} ({len(date_files)}件) ...')
+            combined = '\n\n'.join(all_entries)
+            enriched = enrich_with_url_summaries(combined)
+            block = format_with_claude(date_str, enriched)
+            diary_path = append_to_diary(date_str, block)
+            print(f'  → {diary_path} に追記しました')
 
-        # 全エントリを結合
-        all_entries = []
-        file_shas = []
-        for f in date_files:
+            for path, sha, name in file_shas:
+                delete_file(path, sha, date_str)
+                print(f'  → inbox/{name} を削除しました')
+
+    # ── ワークメモ処理 ──
+    memo_files = list_workmemo_files()
+    if not memo_files:
+        print('workmemo は空です。')
+    else:
+        for f in memo_files:
+            m = FILENAME_RE.match(f['name'])
+            if not m:
+                continue
+            date_str = m.group(1)
+            print(f'[workmemo] 処理中: {f["name"]} ...')
             raw_content, sha = get_file(f['path'])
-            all_entries.append(raw_content.strip())
-            file_shas.append((f['path'], sha, f['name']))
+            meta = parse_workmemo_headers(raw_content)
 
-        combined = '\n\n'.join(all_entries)
+            # URLサマリーを本文に付加
+            enriched_body = enrich_with_url_summaries(meta['body'])
+            meta['body'] = enriched_body
 
-        # URLサマリーを付加
-        enriched = enrich_with_url_summaries(combined)
+            # Claude で構造化
+            parsed = format_workmemo_with_claude(meta['client'], meta['tags'], meta['body'])
 
-        # Claude で整形
-        block = format_with_claude(date_str, enriched)
+            # ファイル保存
+            work_path = save_workmemo(date_str, meta['client'], meta['tags'], parsed,
+                                      meta['body'], meta['file_urls'])
+            print(f'  → {work_path} に保存しました')
 
-        # 日記ファイルに追記
-        diary_path = append_to_diary(date_str, block)
-        print(f'  → {diary_path} に追記しました')
-
-        # 処理済みファイルを削除
-        for path, sha, name in file_shas:
-            delete_file(path, sha, date_str)
-            print(f'  → inbox/{name} を削除しました')
+            # 処理済みファイルを削除
+            delete_file(f['path'], sha, f['name'])
+            print(f'  → workmemo/{f["name"]} を削除しました')
 
     print('完了。')
 
