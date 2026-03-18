@@ -120,6 +120,22 @@
     transition: all 0.15s;
   }
   .chip.selected { border-color: #0071e3; background: #e8f0fe; color: #0071e3; }
+  .tag-add-row {
+    display: flex; gap: 6px; margin-top: 6px;
+  }
+  .tag-add-row input {
+    flex: 1; padding: 5px 10px;
+    border: 1.5px solid #d2d2d7; border-radius: 20px;
+    font-size: 12px; outline: none; background: #fff;
+    font-family: inherit;
+  }
+  .tag-add-row input:focus { border-color: #0071e3; }
+  .tag-add-btn {
+    flex: 0 0 auto; padding: 5px 12px;
+    border: 1.5px solid #0071e3; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    background: #fff; color: #0071e3; cursor: pointer;
+  }
 
   /* ── ボタン ── */
   .buttons { display: flex; gap: 8px; }
@@ -211,14 +227,10 @@
     </div>
     <div class="field">
       <div class="field-label">タグ</div>
-      <div class="tag-chips" id="tag-chips">
-        <div class="chip" data-tag="work/mercer">mercer</div>
-        <div class="chip" data-tag="work/bd">bd</div>
-        <div class="chip" data-tag="work/research">research</div>
-        <div class="chip" data-tag="work/thought_leadership">thought</div>
-        <div class="chip" data-tag="personal/triathlon">triathlon</div>
-        <div class="chip" data-tag="personal/book">book</div>
-        <div class="chip" data-tag="personal/reflection">reflection</div>
+      <div class="tag-chips" id="tag-chips"></div>
+      <div class="tag-add-row">
+        <input type="text" id="tag-input" placeholder="カスタムタグを追加…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTag();}">
+        <button class="tag-add-btn" onclick="addCustomTag()">＋追加</button>
       </div>
     </div>
     <div class="image-preview" id="memo-preview"></div>
@@ -288,12 +300,81 @@ function showStatus(tab, msg, type) {
 }
 
 // ── タグチップ ──
-document.querySelectorAll('.chip').forEach(c => {
-  c.addEventListener('click', () => c.classList.toggle('selected'));
-});
+const DEFAULT_TAGS = [
+  { tag: 'work/mercer',           label: 'mercer' },
+  { tag: 'work/bd',               label: 'bd' },
+  { tag: 'work/research',         label: 'research' },
+  { tag: 'work/thought_leadership', label: 'thought' },
+  { tag: 'personal/triathlon',    label: 'triathlon' },
+  { tag: 'personal/book',         label: 'book' },
+  { tag: 'personal/reflection',   label: 'reflection' },
+];
+
+function getTagCounts() {
+  return JSON.parse(localStorage.getItem('tag_counts') || '{}');
+}
+function getCustomTags() {
+  return JSON.parse(localStorage.getItem('custom_tags') || '[]');
+}
+function saveTagCounts(counts) {
+  localStorage.setItem('tag_counts', JSON.stringify(counts));
+}
+function saveCustomTags(list) {
+  localStorage.setItem('custom_tags', JSON.stringify(list));
+}
+
+function renderTags() {
+  const counts = getTagCounts();
+  const custom = getCustomTags();
+  const allTags = [
+    ...DEFAULT_TAGS,
+    ...custom.map(t => ({ tag: t, label: t })),
+  ];
+  // 使用回数降順でソート（同率は元順序）
+  allTags.sort((a, b) => (counts[b.tag] || 0) - (counts[a.tag] || 0));
+
+  const container = document.getElementById('tag-chips');
+  const selected = new Set(getSelectedTags());
+  container.innerHTML = '';
+  allTags.forEach(({ tag, label }) => {
+    const chip = document.createElement('div');
+    chip.className = 'chip' + (selected.has(tag) ? ' selected' : '');
+    chip.dataset.tag = tag;
+    chip.textContent = label;
+    chip.addEventListener('click', () => chip.classList.toggle('selected'));
+    container.appendChild(chip);
+  });
+}
+
+function addCustomTag() {
+  const input = document.getElementById('tag-input');
+  const raw = input.value.trim().replace(/\s+/g, '_');
+  if (!raw) return;
+  const tag = raw.includes('/') ? raw : `custom/${raw}`;
+  const custom = getCustomTags();
+  if (!custom.includes(tag) && !DEFAULT_TAGS.some(d => d.tag === tag)) {
+    custom.push(tag);
+    saveCustomTags(custom);
+  }
+  input.value = '';
+  renderTags();
+  // 追加したチップを即選択
+  document.querySelectorAll('.chip').forEach(c => {
+    if (c.dataset.tag === tag) c.classList.add('selected');
+  });
+}
+
 function getSelectedTags() {
   return Array.from(document.querySelectorAll('.chip.selected')).map(c => c.dataset.tag);
 }
+
+function incrementTagCounts(tags) {
+  const counts = getTagCounts();
+  tags.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
+  saveTagCounts(counts);
+}
+
+renderTags();
 
 // ── 音声入力 ──
 let recognitions = {};
@@ -451,11 +532,12 @@ async function submitMemo() {
     await ghPut(token, repo, `workmemo/${dateStr}_${tsStr}.txt`,
       `memo: ${client} ${dateStr} ${timeStr}`, btoa(unescape(encodeURIComponent(entry))));
 
+    incrementTagCounts(tags);
     showStatus('memo', `✅ 保存しました（${client}）`, 'ok');
     document.getElementById('memo-text').value = '';
     document.getElementById('memo-client').value = '';
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
     pendingFiles.memo = []; renderPreviews('memo');
+    renderTags();
   } catch(e) {
     showStatus('memo', `❌ 送信失敗: ${e.message}`, 'err');
   } finally {
