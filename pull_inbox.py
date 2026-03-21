@@ -21,6 +21,7 @@ load_dotenv(Path(__file__).parent / '.env')
 GITHUB_TOKEN  = os.environ['GITHUB_TOKEN']
 GITHUB_REPO   = os.environ['GITHUB_REPO']
 DIARY_DIR     = Path.home() / 'Documents/NeoBrain/diary'
+IMAGES_DIR    = Path.home() / 'Documents/NeoBrain/diary/images'
 WORK_DIR      = Path.home() / 'Documents/NeoBrain/context/work'
 ANTHROPIC_KEY = os.environ['ANTHROPIC_API_KEY']
 
@@ -32,6 +33,8 @@ HEADERS = {
 
 # ファイル名パターン: YYYY-MM-DD_HHMMSS.txt
 FILENAME_RE = re.compile(r'^(\d{4}-\d{2}-\d{2})_\d{6}\.txt$')
+# 画像ファイル名パターン: YYYY-MM-DD_HHMMSS_N.{ext}
+IMAGE_RE = re.compile(r'^(\d{4}-\d{2}-\d{2})_\d{6}_\d+\.(png|jpe?g|gif|webp)$', re.IGNORECASE)
 URL_RE = re.compile(r'https?://[^\s\)\]>]+')
 
 JOURNAL_PROMPT = """\
@@ -128,6 +131,50 @@ WORKMEMO_PROMPT = """\
   "output_candidate": false
 }}
 """
+
+
+def list_inbox_images():
+    """inbox/images/ 配下の画像ファイル一覧を取得"""
+    url = f'{GH_API}/repos/{GITHUB_REPO}/contents/inbox/images'
+    res = requests.get(url, headers=HEADERS)
+    if res.status_code == 404:
+        return []
+    res.raise_for_status()
+    return [f for f in res.json() if IMAGE_RE.match(f['name'])]
+
+
+def download_image(path: str, filename: str, date_str: str) -> Path:
+    """GitHubから画像をダウンロードしてローカルに保存"""
+    url = f'{GH_API}/repos/{GITHUB_REPO}/contents/{path}'
+    res = requests.get(url, headers=HEADERS)
+    res.raise_for_status()
+    data = res.json()
+    img_bytes = base64.b64decode(data['content'])
+    dest_dir = IMAGES_DIR / date_str
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / filename
+    dest.write_bytes(img_bytes)
+    return dest
+
+
+def append_images_to_diary(diary_path: Path, image_paths: list):
+    """日記ファイルの末尾に写真セクションを追記（重複防止）"""
+    if not image_paths:
+        return
+    content = diary_path.read_text(encoding='utf-8')
+    lines = []
+    for p in image_paths:
+        # NeoBrain/diary/ からの相対パス
+        rel = p.relative_to(DIARY_DIR)
+        lines.append(f'![{p.name}]({rel})')
+    new_links = '\n'.join(lines)
+
+    if '## 📷 写真' in content:
+        # すでにセクションがある場合は末尾に追記
+        content = content.rstrip() + '\n' + new_links + '\n'
+    else:
+        content = content.rstrip() + f'\n\n## 📷 写真\n\n{new_links}\n'
+    diary_path.write_text(content, encoding='utf-8')
 
 
 def list_inbox_files():
@@ -519,6 +566,7 @@ def process_diary_entry(date_str: str, parsed: dict) -> Path:
 
 def main():
     DIARY_DIR.mkdir(parents=True, exist_ok=True)
+    IMAGES_DIR.mkdir(parents=True, exist_ok=True)
     WORK_DIR.mkdir(parents=True, exist_ok=True)
 
     # ── 日記 inbox 処理 ──
@@ -550,6 +598,37 @@ def main():
             for path, sha, name in file_shas:
                 delete_file(path, sha, date_str)
                 print(f'  → inbox/{name} を削除しました')
+
+    # ── 画像処理 ──
+    image_files = list_inbox_images()
+    if not image_files:
+        print('inbox/images は空です。')
+    else:
+        by_date = defaultdict(list)
+        for f in image_files:
+            m = IMAGE_RE.match(f['name'])
+            if m:
+                by_date[m.group(1)].append(f)
+
+        for date_str, imgs in sorted(by_date.items()):
+            print(f'[images] 処理中: {date_str} ({len(imgs)}枚) ...')
+            downloaded = []
+            for f in imgs:
+                local_path = download_image(f['path'], f['name'], date_str)
+                downloaded.append(local_path)
+                print(f'  → {local_path} に保存しました')
+
+            # 対応する日記ファイルに写真セクションを追記
+            diary_path = DIARY_DIR / f'{date_str}.md'
+            if not diary_path.exists():
+                diary_path.write_text(TEMPLATE.format(date=date_str), encoding='utf-8')
+            append_images_to_diary(diary_path, downloaded)
+            print(f'  → {diary_path} に写真セクションを追記しました')
+
+            # 処理済み画像をGitHubから削除（一覧取得時のSHAを使用）
+            for f in imgs:
+                delete_file(f['path'], f['sha'], f['name'])
+                print(f'  → inbox/images/{f["name"]} を削除しました')
 
     # ── ワークメモ処理 ──
     memo_files = list_workmemo_files()
