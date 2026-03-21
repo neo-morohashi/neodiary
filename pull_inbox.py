@@ -90,15 +90,15 @@ output_candidate: false
 ## 口頭メモ
 
 ## 📋 今日のルーチン
-- [ ] 起床: __時
-- [ ] 睡眠: __時間
-- [ ] 運動: __km / __分
-- [ ] 朝食: __
-- [ ] ランチ: __
-- [ ] 夕食: __
-- [ ] プロジェクト作業: __時間
-- [ ] エネルギー（朝）:
-- [ ] エネルギー（夜）:
+- 起床: __時
+- 睡眠: __時間
+- 運動: __km / __分
+- 朝食: __
+- ランチ: __
+- 夕食: __
+- プロジェクト作業: __時間
+- エネルギー（朝）:
+- エネルギー（夜）:
 
 ## 😊 3つの嬉しいこと
 1.
@@ -366,15 +366,15 @@ def enrich_with_url_summaries(text: str) -> str:
 
 
 ROUTINE_PATTERNS = {
-    'wakeup':         r'- \[ \] 起床:',
-    'sleep':          r'- \[ \] 睡眠:',
-    'exercise':       r'- \[ \] 運動:',
-    'breakfast':      r'- \[ \] 朝食:',
-    'lunch':          r'- \[ \] ランチ:',
-    'dinner':         r'- \[ \] 夕食:',
-    'project':        r'- \[ \] プロジェクト作業:',
-    'energy_morning': r'- \[ \] エネルギー（朝）',
-    'energy_night':   r'- \[ \] エネルギー（夜）',
+    'wakeup':         r'- 起床: __',
+    'sleep':          r'- 睡眠: __',
+    'exercise':       r'- 運動: __',
+    'breakfast':      r'- 朝食: __',
+    'lunch':          r'- ランチ: __',
+    'dinner':         r'- 夕食: __',
+    'project':        r'- プロジェクト作業: __',
+    'energy_morning': r'- エネルギー（朝）:$',
+    'energy_night':   r'- エネルギー（夜）:$',
 }
 ROUTINE_LABELS = {
     'wakeup':         '起床',
@@ -426,12 +426,12 @@ def fill_diary_template(diary_path: Path, parsed: dict):
     new_lines = []
 
     for line in lines:
-        # ルーチン行: - [ ] のみ対象（- [x] は上書きしない）
+        # ルーチン行: プレースホルダー(__) のみ対象（入力済みは上書きしない）
         matched = False
         for key, pattern in ROUTINE_PATTERNS.items():
             val = routine.get(key, '')
             if val and re.search(pattern, line):
-                new_lines.append(f'- [x] {ROUTINE_LABELS[key]}: {val}')
+                new_lines.append(f'- {ROUTINE_LABELS[key]}: {val}')
                 matched = True
                 break
         if matched:

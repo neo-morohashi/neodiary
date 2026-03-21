@@ -208,6 +208,14 @@
   <!-- 📓 日記パネル -->
   <div class="panel active" id="panel-diary">
     <textarea id="diary-text" rows="7" placeholder="今日の記録を入力（音声入力も使えます）"></textarea>
+    <div class="field">
+      <div class="field-label">タグ</div>
+      <div class="tag-chips" id="diary-tag-chips"></div>
+      <div class="tag-add-row">
+        <input type="text" id="diary-tag-input" placeholder="カスタムタグを追加…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTag('diary');}">
+        <button class="tag-add-btn" onclick="addCustomTag('diary')">＋追加</button>
+      </div>
+    </div>
     <div class="image-preview" id="diary-preview"></div>
     <input type="file" id="diary-file-input" accept="image/*" multiple style="display:none" onchange="onFilesSelected(event,'diary')">
     <div class="buttons">
@@ -230,10 +238,10 @@
     </div>
     <div class="field">
       <div class="field-label">タグ</div>
-      <div class="tag-chips" id="tag-chips"></div>
+      <div class="tag-chips" id="memo-tag-chips"></div>
       <div class="tag-add-row">
-        <input type="text" id="tag-input" placeholder="カスタムタグを追加…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTag();}">
-        <button class="tag-add-btn" onclick="addCustomTag()">＋追加</button>
+        <input type="text" id="memo-tag-input" placeholder="カスタムタグを追加…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTag('memo');}">
+        <button class="tag-add-btn" onclick="addCustomTag('memo')">＋追加</button>
       </div>
     </div>
     <div class="image-preview" id="memo-preview"></div>
@@ -304,13 +312,13 @@ function showStatus(tab, msg, type) {
 
 // ── タグチップ ──
 const DEFAULT_TAGS = [
-  { tag: 'work/mercer',           label: 'mercer' },
-  { tag: 'work/bd',               label: 'bd' },
-  { tag: 'work/research',         label: 'research' },
+  { tag: 'work/mercer',             label: 'mercer' },
+  { tag: 'work/bd',                 label: 'bd' },
+  { tag: 'work/research',           label: 'research' },
   { tag: 'work/thought_leadership', label: 'thought' },
-  { tag: 'personal/triathlon',    label: 'triathlon' },
-  { tag: 'personal/book',         label: 'book' },
-  { tag: 'personal/reflection',   label: 'reflection' },
+  { tag: 'personal/triathlon',      label: 'triathlon' },
+  { tag: 'personal/book',           label: 'book' },
+  { tag: 'personal/reflection',     label: 'reflection' },
 ];
 
 function getTagCounts() {
@@ -326,18 +334,17 @@ function saveCustomTags(list) {
   localStorage.setItem('custom_tags', JSON.stringify(list));
 }
 
-function renderTags() {
+function renderTags(tab) {
   const counts = getTagCounts();
   const custom = getCustomTags();
   const allTags = [
     ...DEFAULT_TAGS,
     ...custom.map(t => ({ tag: t, label: t })),
   ];
-  // 使用回数降順でソート（同率は元順序）
   allTags.sort((a, b) => (counts[b.tag] || 0) - (counts[a.tag] || 0));
 
-  const container = document.getElementById('tag-chips');
-  const selected = new Set(getSelectedTags());
+  const container = document.getElementById(`${tab}-tag-chips`);
+  const selected = new Set(getSelectedTags(tab));
   container.innerHTML = '';
   allTags.forEach(({ tag, label }) => {
     const chip = document.createElement('div');
@@ -349,8 +356,8 @@ function renderTags() {
   });
 }
 
-function addCustomTag() {
-  const input = document.getElementById('tag-input');
+function addCustomTag(tab) {
+  const input = document.getElementById(`${tab}-tag-input`);
   const raw = input.value.trim().replace(/\s+/g, '_');
   if (!raw) return;
   const tag = raw.includes('/') ? raw : `custom/${raw}`;
@@ -360,15 +367,16 @@ function addCustomTag() {
     saveCustomTags(custom);
   }
   input.value = '';
-  renderTags();
-  // 追加したチップを即選択
-  document.querySelectorAll('.chip').forEach(c => {
+  renderTags('diary');
+  renderTags('memo');
+  // 追加したチップを追加先タブで即選択
+  document.querySelectorAll(`#${tab}-tag-chips .chip`).forEach(c => {
     if (c.dataset.tag === tag) c.classList.add('selected');
   });
 }
 
-function getSelectedTags() {
-  return Array.from(document.querySelectorAll('.chip.selected')).map(c => c.dataset.tag);
+function getSelectedTags(tab) {
+  return Array.from(document.querySelectorAll(`#${tab}-tag-chips .chip.selected`)).map(c => c.dataset.tag);
 }
 
 function incrementTagCounts(tags) {
@@ -377,7 +385,8 @@ function incrementTagCounts(tags) {
   saveTagCounts(counts);
 }
 
-renderTags();
+renderTags('diary');
+renderTags('memo');
 
 // ── 音声入力 ──
 let recognitions = {};
@@ -405,19 +414,55 @@ function toggleMic(tab) {
   r.start();
 }
 
-// ── 画像添付 ──
+// ── 画像圧縮（GitHub API は 1MB 制限） ──
+function compressImage(file, maxBytes) {
+  return new Promise(resolve => {
+    if (!file.type.startsWith('image/') || file.size <= maxBytes) {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(file);
+      return;
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.width, h = img.height;
+      // 長辺を最大 1600px に収める
+      const maxDim = 1600;
+      if (w > maxDim || h > maxDim) {
+        const ratio = Math.min(maxDim / w, maxDim / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    };
+    img.src = url;
+  });
+}
+
+// ── ファイル添付 ──
 const pendingFiles = { diary: [], memo: [] };
 
-function onFilesSelected(event, tab) {
-  Array.from(event.target.files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      pendingFiles[tab].push({ file, dataUrl: e.target.result, b64: e.target.result.split(',')[1] });
-      renderPreviews(tab);
-    };
-    reader.readAsDataURL(file);
-  });
+async function onFilesSelected(event, tab) {
+  const files = Array.from(event.target.files);
   event.target.value = '';
+  for (const file of files) {
+    // 画像は 900KB 超えたら圧縮、それ以外はそのまま読み込む
+    const dataUrl = await compressImage(file, 900 * 1024);
+    const b64 = dataUrl.split(',')[1];
+    pendingFiles[tab].push({ file, dataUrl, b64 });
+    renderPreviews(tab);
+  }
 }
 
 function renderPreviews(tab) {
@@ -457,7 +502,10 @@ async function ghPut(token, repo, path, message, b64) {
     method: 'PUT', headers: ghHeaders(token),
     body: JSON.stringify({ message, content: b64 }),
   });
-  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(`GitHub API error: ${res.status}${body.message ? ' – ' + body.message : ''}`);
+  }
   return res.json();
 }
 
@@ -492,15 +540,20 @@ async function submitDiary() {
       showStatus('diary', `📷 画像アップロード中…`, 'ok');
       imageUrls = await uploadFiles(token, repo, pendingFiles.diary, 'inbox/images', tsStr);
     }
-    let entry = `[${timeStr}]\n${text}\n`;
+    const tags = getSelectedTags('diary');
+    let entry = `[${timeStr}]\n`;
+    if (tags.length) entry += `[TAGS: ${tags.join(', ')}]\n`;
+    entry += `${text}\n`;
     if (imageUrls.length) entry += '\n' + imageUrls.map(u => `![画像](${u})`).join('\n') + '\n';
 
     await ghPut(token, repo, `inbox/${dateStr}_${tsStr}.txt`,
       `diary: ${dateStr} ${timeStr}`, btoa(unescape(encodeURIComponent(entry))));
 
+    if (tags.length) incrementTagCounts(tags);
     showStatus('diary', `✅ 保存しました（${dateStr} ${timeStr}）`, 'ok');
     document.getElementById('diary-text').value = '';
     pendingFiles.diary = []; renderPreviews('diary');
+    renderTags('diary');
   } catch(e) {
     showStatus('diary', `❌ 送信失敗: ${e.message}`, 'err');
   } finally {
@@ -528,7 +581,7 @@ async function submitMemo() {
       showStatus('memo', `📎 ファイルアップロード中…`, 'ok');
       fileUrls = await uploadFiles(token, repo, pendingFiles.memo, 'workmemo/files', tsStr);
     }
-    const tags = getSelectedTags();
+    const tags = getSelectedTags('memo');
     let entry = `[CLIENT: ${client}]\n[TAGS: ${tags.join(', ')}]\n[TIME: ${timeStr}]\n${text}\n`;
     if (fileUrls.length) entry += '\n' + fileUrls.map(u => `[FILE: ${u}]`).join('\n') + '\n';
 
@@ -540,7 +593,7 @@ async function submitMemo() {
     document.getElementById('memo-text').value = '';
     document.getElementById('memo-client').value = '';
     pendingFiles.memo = []; renderPreviews('memo');
-    renderTags();
+    renderTags('memo');
   } catch(e) {
     showStatus('memo', `❌ 送信失敗: ${e.message}`, 'err');
   } finally {
