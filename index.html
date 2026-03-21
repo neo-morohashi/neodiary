@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>NeoBrain</title>
 <style>
-  /* ── カラー変数 ── */
   :root {
     --bg:            #080810;
     --surface:       rgba(255,255,255,0.04);
@@ -19,14 +18,10 @@
     --accent2:       #8b5cf6;
     --accent-glow:   rgba(99,102,241,0.35);
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  /* ── スクロールバー ── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
-
   body {
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg);
@@ -36,8 +31,6 @@
     flex-direction: column;
     position: relative;
   }
-
-  /* 背景グラデーションメッシュ */
   body::before, body::after {
     content: '';
     position: fixed;
@@ -55,8 +48,6 @@
     bottom: -120px; right: -120px;
     background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
   }
-
-  /* ── ヘッダー ── */
   .header {
     padding: 16px 16px 0;
     position: relative; z-index: 1;
@@ -70,35 +61,25 @@
     align-items: flex-start;
     margin-bottom: 12px;
   }
-  .header h1 { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+  .header h1 { font-size: 18px; font-weight: 700; }
   .header .date { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
-  .settings-icon {
-    font-size: 20px; cursor: pointer;
-    color: var(--text-secondary); padding: 4px;
-    transition: color 0.15s;
-  }
+  .settings-icon { font-size: 20px; cursor: pointer; color: var(--text-secondary); padding: 4px; transition: color 0.15s; }
   .settings-icon:hover { color: var(--text-primary); }
-
-  /* ── タブ (ピル型) ── */
   .tabs {
-    display: inline-flex;
-    gap: 2px;
+    display: flex; gap: 2px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 4px;
+    border-radius: 12px; padding: 4px;
     margin: 14px 16px;
     position: relative; z-index: 1;
   }
   .tab {
     flex: 1; padding: 8px 20px;
-    text-align: center;
-    font-size: 14px; font-weight: 600;
+    text-align: center; font-size: 14px; font-weight: 600;
     border-radius: 8px; cursor: pointer;
     color: var(--text-secondary);
     transition: all 0.2s;
-    border: none; background: transparent;
-    font-family: inherit;
+    border: none; background: transparent; font-family: inherit;
   }
   .tab:hover { color: var(--text-primary); background: var(--surface-hover); }
   .tab.active {
@@ -106,8 +87,6 @@
     color: #fff;
     box-shadow: 0 2px 12px var(--accent-glow);
   }
-
-  /* ── コンテンツ ── */
   .content {
     flex: 1; padding: 0 16px 20px;
     display: flex; flex-direction: column;
@@ -115,14 +94,12 @@
   }
   .panel { display: none; flex-direction: column; flex: 1; gap: 10px; }
   .panel.active { display: flex; }
-
-  /* ── 設定パネル ── */
   #settingsPanel {
     display: none;
     background: rgba(255,255,255,0.05);
     border: 1px solid var(--border-strong);
-    border-radius: 12px;
-    padding: 16px; margin: 0 16px 12px;
+    border-radius: 12px; padding: 16px;
+    margin: 0 16px 12px;
     position: relative; z-index: 1;
     backdrop-filter: blur(8px);
   }
@@ -130,25 +107,18 @@
     width: 100%; padding: 10px 12px;
     background: var(--surface);
     border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    font-size: 14px; margin: 6px 0 12px;
-    color: var(--text-primary);
-    font-family: inherit;
-    outline: none;
+    border-radius: 8px; font-size: 14px;
+    margin: 6px 0 12px;
+    color: var(--text-primary); font-family: inherit; outline: none;
   }
   #settingsPanel input:focus { border-color: rgba(99,102,241,0.5); }
   #settingsPanel label { font-size: 13px; color: var(--text-secondary); }
-
-  /* ── 入力共通 ── */
   textarea, .text-input {
-    width: 100%;
-    padding: 12px 14px;
+    width: 100%; padding: 12px 14px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    font-size: 16px; line-height: 1.5;
-    color: var(--text-primary);
-    outline: none; font-family: inherit;
+    border-radius: 12px; font-size: 16px; line-height: 1.5;
+    color: var(--text-primary); outline: none; font-family: inherit;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
   textarea { resize: none; }
@@ -160,21 +130,32 @@
   .field-label {
     font-size: 12px; font-weight: 600;
     color: var(--text-secondary);
-    text-transform: uppercase; letter-spacing: 0.5px;
-    margin-bottom: 4px;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
   }
   .field { display: flex; flex-direction: column; }
-
-  /* ── 画像プレビュー ── */
-  .image-preview {
-    display: none; gap: 8px; flex-wrap: wrap;
+  .type-toggle {
+    display: inline-flex; gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 3px;
+    align-self: flex-start;
   }
+  .type-btn {
+    padding: 5px 18px; border: none;
+    background: transparent; cursor: pointer;
+    font-size: 13px; font-weight: 600; font-family: inherit;
+    color: var(--text-secondary); border-radius: 7px;
+    transition: all 0.15s; letter-spacing: 0.02em;
+    -webkit-appearance: none;
+  }
+  .type-btn:hover { color: var(--text-primary); background: var(--surface-hover); }
+  .type-btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; box-shadow: 0 2px 8px rgba(99,102,241,0.4);
+  }
+  .image-preview { display: none; gap: 8px; flex-wrap: wrap; }
   .img-wrap { position: relative; display: inline-block; }
-  .img-wrap img {
-    width: 72px; height: 72px;
-    object-fit: cover; border-radius: 8px;
-    border: 1px solid var(--border-strong);
-  }
+  .img-wrap img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-strong); }
   .img-remove {
     position: absolute; top: -6px; right: -6px;
     background: #ef4444; color: #fff;
@@ -182,120 +163,78 @@
     font-size: 12px; line-height: 20px; text-align: center;
     cursor: pointer; border: none; font-weight: bold;
   }
-
-  /* ── タグチップ ── */
   .tag-chips { display: flex; gap: 6px; flex-wrap: wrap; min-height: 24px; }
   .chip {
-    padding: 4px 11px;
-    border-radius: 20px; font-size: 12px; font-weight: 500;
+    padding: 4px 11px; border-radius: 20px;
+    font-size: 12px; font-weight: 500;
     border: 1px solid var(--border-strong);
     background: transparent; color: var(--text-secondary);
-    cursor: pointer; user-select: none;
-    transition: all 0.15s;
+    cursor: pointer; user-select: none; transition: all 0.15s;
   }
   .chip:hover { border-color: rgba(99,102,241,0.4); color: var(--text-primary); }
   .chip.selected {
     border-color: rgba(99,102,241,0.6);
     background: rgba(99,102,241,0.2);
-    color: #a5b4fc;
-    box-shadow: 0 0 10px rgba(99,102,241,0.2);
+    color: #a5b4fc; box-shadow: 0 0 10px rgba(99,102,241,0.2);
   }
-  .tag-add-row {
-    display: flex; gap: 6px; margin-top: 6px;
-  }
+  .tag-add-row { display: flex; gap: 6px; margin-top: 6px; }
   .tag-add-row input {
     flex: 1; padding: 5px 12px;
-    background: transparent;
-    border: 1px solid var(--border); border-radius: 20px;
-    font-size: 13px; outline: none;
-    color: var(--text-primary);
-    font-family: inherit;
-    -webkit-appearance: none; appearance: none;
-    min-width: 0;
-    transition: border-color 0.2s;
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 20px; font-size: 13px; outline: none;
+    color: var(--text-primary); font-family: inherit;
+    -webkit-appearance: none; min-width: 0; transition: border-color 0.2s;
   }
   .tag-add-row input::placeholder { color: var(--text-muted); }
   .tag-add-row input:focus { border-color: rgba(99,102,241,0.5); }
   .tag-add-btn {
     flex: 0 0 auto; padding: 5px 14px;
     border: 1px solid var(--border-strong) !important;
-    border-radius: 20px;
-    font-size: 13px; font-weight: 600;
+    border-radius: 20px; font-size: 13px; font-weight: 600;
     background: var(--surface-hover) !important;
     color: var(--text-secondary) !important;
-    cursor: pointer;
-    -webkit-appearance: none; appearance: none;
-    transition: color 0.15s, border-color 0.15s;
+    cursor: pointer; -webkit-appearance: none; transition: color 0.15s, border-color 0.15s;
   }
   .tag-add-btn:hover { color: var(--text-primary) !important; border-color: rgba(99,102,241,0.4) !important; }
-
-  /* ── ボタン ── */
   .buttons { display: flex; gap: 8px; }
   button {
-    flex: 1; padding: 14px;
-    border: none; border-radius: 12px;
-    font-size: 16px; font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s, box-shadow 0.2s, transform 0.1s;
-    font-family: inherit;
+    flex: 1; padding: 14px; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s, box-shadow 0.2s, transform 0.1s; font-family: inherit;
   }
   button:active { transform: scale(0.98); }
   .btn-icon {
     flex: 0 0 52px; font-size: 20px;
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    color: var(--text-secondary);
-    transition: background 0.15s, color 0.15s;
+    background: var(--surface); border: 1px solid var(--border-strong);
+    color: var(--text-secondary); transition: background 0.15s, color 0.15s;
   }
   .btn-icon:hover { background: var(--surface-hover); color: var(--text-primary); }
-  .btn-icon.recording {
-    background: rgba(239,68,68,0.15);
-    border-color: rgba(239,68,68,0.5);
-    color: #fca5a5;
-  }
+  .btn-icon.recording { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.5); color: #fca5a5; }
   .btn-primary {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
-    box-shadow: 0 4px 20px var(--accent-glow);
+    color: #fff; box-shadow: 0 4px 20px var(--accent-glow);
   }
   .btn-primary:hover:not(:disabled) { box-shadow: 0 6px 28px rgba(99,102,241,0.5); }
   .btn-primary:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
   .btn-green {
     background: linear-gradient(135deg, #059669, #10b981);
-    color: #fff;
-    box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+    color: #fff; box-shadow: 0 4px 20px rgba(16,185,129,0.3);
   }
   .btn-green:hover:not(:disabled) { box-shadow: 0 6px 28px rgba(16,185,129,0.45); }
   .btn-green:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
   .btn-settings {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
-    padding: 10px; border-radius: 8px;
-    font-size: 14px; width: 100%;
-    border: none; font-weight: 600;
+    color: #fff; padding: 10px; border-radius: 8px;
+    font-size: 14px; width: 100%; border: none; font-weight: 600;
     box-shadow: 0 4px 16px var(--accent-glow);
   }
-
-  /* ── ステータス ── */
-  .status {
-    padding: 12px 14px; border-radius: 10px;
-    font-size: 14px; display: none;
-  }
-  .status.ok  {
-    background: rgba(5,150,105,0.12);
-    border: 1px solid rgba(16,185,129,0.3);
-    color: #6ee7b7;
-  }
-  .status.err {
-    background: rgba(220,38,38,0.12);
-    border: 1px solid rgba(239,68,68,0.3);
-    color: #fca5a5;
-  }
+  .status { padding: 12px 14px; border-radius: 10px; font-size: 14px; display: none; }
+  .status.ok  { background: rgba(5,150,105,0.12); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+  .status.err { background: rgba(220,38,38,0.12); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
 </style>
 </head>
 <body>
 
-<!-- ヘッダー -->
 <div class="header">
   <div class="header-top">
     <div>
@@ -306,7 +245,6 @@
   </div>
 </div>
 
-<!-- 設定パネル -->
 <div id="settingsPanel">
   <label>GitHub Personal Access Token</label>
   <input type="password" id="inputToken" placeholder="ghp_xxxxxxxxxx">
@@ -315,28 +253,28 @@
   <button class="btn-settings" onclick="saveSettings()">保存</button>
 </div>
 
-<!-- タブ -->
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('diary', this)">📓 日記</button>
-  <button class="tab" onclick="switchTab('memo', this)">📋 仕事メモ</button>
+  <button class="tab active" onclick="switchTab('diary', this)">Personal</button>
+  <button class="tab" onclick="switchTab('memo', this)">Work</button>
 </div>
 
-<!-- コンテンツ -->
 <div class="content">
 
-  <!-- 📓 日記パネル -->
+  <!-- Personal パネル -->
   <div class="panel active" id="panel-diary">
     <textarea id="diary-text" rows="7" placeholder="今日の記録を入力（音声入力も使えます）"></textarea>
     <div class="field">
       <div class="field-label">タグ</div>
       <div class="tag-chips" id="diary-tag-chips"></div>
       <div class="tag-add-row">
-        <input type="text" id="diary-tag-input" placeholder="カスタムタグを追加…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTag('diary');}">
+        <input type="text" id="diary-tag-input" placeholder="カスタムタグを追加…"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTag('diary');}">
         <button class="tag-add-btn" onclick="addCustomTag('diary')">＋追加</button>
       </div>
     </div>
     <div class="image-preview" id="diary-preview"></div>
-    <input type="file" id="diary-file-input" accept="image/*" multiple style="display:none" onchange="onFilesSelected(event,'diary')">
+    <input type="file" id="diary-file-input" accept="image/*" multiple style="display:none"
+      onchange="onFilesSelected(event,'diary')">
     <div class="buttons">
       <button class="btn-icon" id="diary-mic" onclick="toggleMic('diary')" title="音声入力">🎤</button>
       <button class="btn-icon" onclick="document.getElementById('diary-file-input').click()" title="写真">📷</button>
@@ -345,11 +283,15 @@
     <div class="status" id="diary-status"></div>
   </div>
 
-  <!-- 📋 仕事メモパネル -->
+  <!-- Work パネル -->
   <div class="panel" id="panel-memo">
+    <div class="type-toggle">
+      <button class="type-btn active" data-type="internal" onclick="selectType(this)">Internal</button>
+      <button class="type-btn" data-type="external" onclick="selectType(this)">External</button>
+    </div>
     <div class="field">
-      <div class="field-label">クライアント</div>
-      <input type="text" class="text-input" id="memo-client" placeholder="クライアント名">
+      <div class="field-label">タイトル</div>
+      <input type="text" class="text-input" id="memo-client" placeholder="プロジェクト・案件名">
     </div>
     <div class="field">
       <div class="field-label">メモ</div>
@@ -359,12 +301,14 @@
       <div class="field-label">タグ</div>
       <div class="tag-chips" id="memo-tag-chips"></div>
       <div class="tag-add-row">
-        <input type="text" id="memo-tag-input" placeholder="カスタムタグを追加…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTag('memo');}">
+        <input type="text" id="memo-tag-input" placeholder="カスタムタグを追加…"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTag('memo');}">
         <button class="tag-add-btn" onclick="addCustomTag('memo')">＋追加</button>
       </div>
     </div>
     <div class="image-preview" id="memo-preview"></div>
-    <input type="file" id="memo-file-input" accept="image/*,application/pdf,.doc,.docx,.ppt,.pptx" multiple style="display:none" onchange="onFilesSelected(event,'memo')">
+    <input type="file" id="memo-file-input" accept="image/*,application/pdf,.doc,.docx,.ppt,.pptx"
+      multiple style="display:none" onchange="onFilesSelected(event,'memo')">
     <div class="buttons">
       <button class="btn-icon" id="memo-mic" onclick="toggleMic('memo')" title="音声入力">🎤</button>
       <button class="btn-icon" onclick="document.getElementById('memo-file-input').click()" title="ファイル添付">📎</button>
@@ -376,7 +320,6 @@
 </div>
 
 <script>
-// ── 日付 ──
 const today = new Date();
 const pad = n => String(n).padStart(2, '0');
 const dateStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
@@ -384,18 +327,14 @@ const timeStr = `${pad(today.getHours())}:${pad(today.getMinutes())}`;
 const tsStr   = `${pad(today.getHours())}${pad(today.getMinutes())}${pad(today.getSeconds())}`;
 document.getElementById('dateLabel').textContent = dateStr;
 
-// ── URLパラメータ（ショートカット連携）──
 (function() {
-  const search = location.search;
-  const prefix = '?url=';
-  if (search.startsWith(prefix)) {
-    const sharedUrl = decodeURIComponent(search.slice(prefix.length));
-    document.getElementById('diary-text').value = sharedUrl;
+  const p = location.search;
+  if (p.startsWith('?url=')) {
+    document.getElementById('diary-text').value = decodeURIComponent(p.slice(5));
     history.replaceState(null, '', location.pathname);
   }
 })();
 
-// ── タブ切り替え ──
 function switchTab(name, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -403,7 +342,15 @@ function switchTab(name, el) {
   document.getElementById('panel-' + name).classList.add('active');
 }
 
-// ── 設定 ──
+function selectType(btn) {
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function getSelectedType() {
+  const a = document.querySelector('.type-btn.active');
+  return a ? a.dataset.type : 'internal';
+}
+
 function loadSettings() {
   document.getElementById('inputToken').value = localStorage.getItem('gh_token') || '';
   document.getElementById('inputRepo').value  = localStorage.getItem('gh_repo')  || '';
@@ -420,52 +367,45 @@ function toggleSettings() {
   loadSettings();
 }
 
-// ── ステータス表示 ──
 function showStatus(tab, msg, type) {
   const el = document.getElementById(`${tab}-status`);
-  el.textContent = msg;
-  el.className = `status ${type}`;
-  el.style.display = 'block';
+  el.textContent = msg; el.className = `status ${type}`; el.style.display = 'block';
   if (type === 'ok') setTimeout(() => el.style.display = 'none', 2500);
 }
 
-// ── タグチップ ──
-const DEFAULT_TAGS = [
+const PERSONAL_TAGS = [
+  { tag: 'personal/triathlon',      label: 'triathlon' },
+  { tag: 'personal/book',           label: 'book' },
+  { tag: 'personal/dog',            label: 'dog' },
+  { tag: 'personal/realestate',     label: 'realestate' },
+  { tag: 'personal/reflection',     label: 'reflection' },
+];
+const WORK_TAGS = [
   { tag: 'work/mercer',             label: 'mercer' },
   { tag: 'work/bd',                 label: 'bd' },
   { tag: 'work/research',           label: 'research' },
   { tag: 'work/thought_leadership', label: 'thought' },
-  { tag: 'personal/triathlon',      label: 'triathlon' },
-  { tag: 'personal/book',           label: 'book' },
-  { tag: 'personal/reflection',     label: 'reflection' },
 ];
 
-function getTagCounts() {
-  return JSON.parse(localStorage.getItem('tag_counts') || '{}');
-}
-function getCustomTags() {
-  return JSON.parse(localStorage.getItem('custom_tags') || '[]');
-}
-function saveTagCounts(counts) {
-  localStorage.setItem('tag_counts', JSON.stringify(counts));
-}
-function saveCustomTags(list) {
-  localStorage.setItem('custom_tags', JSON.stringify(list));
-}
+function getTagCounts(k)    { return JSON.parse(localStorage.getItem(k) || '{}'); }
+function getCustomTags(k)   { return JSON.parse(localStorage.getItem(k) || '[]'); }
+function saveTagCounts(k,c) { localStorage.setItem(k, JSON.stringify(c)); }
+function saveCustomTags(k,t){ localStorage.setItem(k, JSON.stringify(t)); }
 
 function renderTags(tab) {
-  const counts = getTagCounts();
-  const custom = getCustomTags();
-  const allTags = [
-    ...DEFAULT_TAGS,
-    ...custom.map(t => ({ tag: t, label: t })),
-  ];
-  allTags.sort((a, b) => (counts[b.tag] || 0) - (counts[a.tag] || 0));
+  const isWork   = tab === 'memo';
+  const baseTags = isWork ? WORK_TAGS : PERSONAL_TAGS;
+  const cKey     = isWork ? 'work_tag_counts'  : 'tag_counts';
+  const ctKey    = isWork ? 'work_custom_tags' : 'custom_tags';
+  const counts   = getTagCounts(cKey);
+  const custom   = getCustomTags(ctKey);
+  const all = [...baseTags, ...custom.map(t => ({ tag: t, label: t.split('/').pop() }))];
+  all.sort((a, b) => (counts[b.tag] || 0) - (counts[a.tag] || 0));
 
   const container = document.getElementById(`${tab}-tag-chips`);
-  const selected = new Set(getSelectedTags(tab));
+  const selected  = new Set(getSelectedTags(tab));
   container.innerHTML = '';
-  allTags.forEach(({ tag, label }) => {
+  all.forEach(({ tag, label }) => {
     const chip = document.createElement('div');
     chip.className = 'chip' + (selected.has(tag) ? ' selected' : '');
     chip.dataset.tag = tag;
@@ -476,19 +416,16 @@ function renderTags(tab) {
 }
 
 function addCustomTag(tab) {
-  const input = document.getElementById(`${tab}-tag-input`);
-  const raw = input.value.trim().replace(/\s+/g, '_');
+  const isWork = tab === 'memo';
+  const ctKey  = isWork ? 'work_custom_tags' : 'custom_tags';
+  const input  = document.getElementById(`${tab}-tag-input`);
+  const raw    = input.value.trim().replace(/\s+/g, '_');
   if (!raw) return;
-  const tag = raw.includes('/') ? raw : `custom/${raw}`;
-  const custom = getCustomTags();
-  if (!custom.includes(tag) && !DEFAULT_TAGS.some(d => d.tag === tag)) {
-    custom.push(tag);
-    saveCustomTags(custom);
-  }
+  const tag    = raw.includes('/') ? raw : `custom/${raw}`;
+  const custom = getCustomTags(ctKey);
+  if (!custom.includes(tag)) { custom.push(tag); saveCustomTags(ctKey, custom); }
   input.value = '';
-  renderTags('diary');
-  renderTags('memo');
-  // 追加したチップを追加先タブで即選択
+  renderTags(tab);
   document.querySelectorAll(`#${tab}-tag-chips .chip`).forEach(c => {
     if (c.dataset.tag === tag) c.classList.add('selected');
   });
@@ -497,28 +434,23 @@ function addCustomTag(tab) {
 function getSelectedTags(tab) {
   return Array.from(document.querySelectorAll(`#${tab}-tag-chips .chip.selected`)).map(c => c.dataset.tag);
 }
-
-function incrementTagCounts(tags) {
-  const counts = getTagCounts();
+function incrementTagCounts(tab, tags) {
+  const key = tab === 'memo' ? 'work_tag_counts' : 'tag_counts';
+  const counts = getTagCounts(key);
   tags.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
-  saveTagCounts(counts);
+  saveTagCounts(key, counts);
 }
 
 renderTags('diary');
 renderTags('memo');
 
-// ── 音声入力 ──
 let recognitions = {};
 function toggleMic(tab) {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    showStatus(tab, 'このブラウザは音声入力に対応していません', 'err');
-    return;
+    showStatus(tab, 'このブラウザは音声入力に対応していません', 'err'); return;
   }
   const btn = document.getElementById(`${tab}-mic`);
-  if (recognitions[tab]) {
-    recognitions[tab].stop();
-    return;
-  }
+  if (recognitions[tab]) { recognitions[tab].stop(); return; }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const r = new SR();
   r.lang = 'ja-JP'; r.continuous = true; r.interimResults = false;
@@ -529,30 +461,25 @@ function toggleMic(tab) {
     ta.value = ta.value ? ta.value + '\n' + t : t;
   };
   r.onend = () => { btn.classList.remove('recording'); btn.textContent = '🎤'; delete recognitions[tab]; };
-  recognitions[tab] = r;
-  r.start();
+  recognitions[tab] = r; r.start();
 }
 
-// ── 画像圧縮（GitHub API は 1MB 制限） ──
 function compressImage(file, maxBytes) {
   return new Promise(resolve => {
     if (!file.type.startsWith('image/') || file.size <= maxBytes) {
       const reader = new FileReader();
       reader.onload = e => resolve(e.target.result);
-      reader.readAsDataURL(file);
-      return;
+      reader.readAsDataURL(file); return;
     }
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(url);
       let w = img.width, h = img.height;
-      // 長辺を最大 1600px に収める
       const maxDim = 1600;
       if (w > maxDim || h > maxDim) {
-        const ratio = Math.min(maxDim / w, maxDim / h);
-        w = Math.round(w * ratio);
-        h = Math.round(h * ratio);
+        const ratio = Math.min(maxDim/w, maxDim/h);
+        w = Math.round(w*ratio); h = Math.round(h*ratio);
       }
       const canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
@@ -569,21 +496,16 @@ function compressImage(file, maxBytes) {
   });
 }
 
-// ── ファイル添付 ──
 const pendingFiles = { diary: [], memo: [] };
-
 async function onFilesSelected(event, tab) {
   const files = Array.from(event.target.files);
   event.target.value = '';
   for (const file of files) {
-    // 画像は 900KB 超えたら圧縮、それ以外はそのまま読み込む
     const dataUrl = await compressImage(file, 900 * 1024);
-    const b64 = dataUrl.split(',')[1];
-    pendingFiles[tab].push({ file, dataUrl, b64 });
+    pendingFiles[tab].push({ file, dataUrl, b64: dataUrl.split(',')[1] });
     renderPreviews(tab);
   }
 }
-
 function renderPreviews(tab) {
   const area = document.getElementById(`${tab}-preview`);
   area.innerHTML = '';
@@ -593,26 +515,20 @@ function renderPreviews(tab) {
   files.forEach((item, idx) => {
     const wrap = document.createElement('div');
     wrap.className = 'img-wrap';
-    const isImage = item.file.type.startsWith('image/');
-    if (isImage) {
-      const img = document.createElement('img');
-      img.src = item.dataUrl;
-      wrap.appendChild(img);
+    if (item.file.type.startsWith('image/')) {
+      const img = document.createElement('img'); img.src = item.dataUrl; wrap.appendChild(img);
     } else {
       const label = document.createElement('div');
-      label.style.cssText = 'width:72px;height:72px;background:#f2f2f7;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6e6e73;text-align:center;padding:4px;word-break:break-all;border:1px solid #d2d2d7';
-      label.textContent = item.file.name;
-      wrap.appendChild(label);
+      label.style.cssText = 'width:72px;height:72px;background:rgba(255,255,255,0.05);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#64748b;text-align:center;padding:4px;word-break:break-all;border:1px solid rgba(255,255,255,0.13)';
+      label.textContent = item.file.name; wrap.appendChild(label);
     }
     const btn = document.createElement('button');
     btn.className = 'img-remove'; btn.textContent = '×';
     btn.onclick = () => { pendingFiles[tab].splice(idx, 1); renderPreviews(tab); };
-    wrap.appendChild(btn);
-    area.appendChild(wrap);
+    wrap.appendChild(btn); area.appendChild(wrap);
   });
 }
 
-// ── GitHub API共通 ──
 function ghHeaders(token) {
   return { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' };
 }
@@ -627,12 +543,11 @@ async function ghPut(token, repo, path, message, b64) {
   }
   return res.json();
 }
-
 async function uploadFiles(token, repo, files, folder, ts) {
   const urls = [];
   for (let i = 0; i < files.length; i++) {
     const { file, b64 } = files[i];
-    const ext = file.name.split('.').pop().toLowerCase() || 'bin';
+    const ext  = file.name.split('.').pop().toLowerCase() || 'bin';
     const path = `${folder}/${dateStr}_${ts}_${i+1}.${ext}`;
     const data = await ghPut(token, repo, path, `attach: ${dateStr} ${timeStr}`, b64);
     urls.push(data.content.download_url);
@@ -640,7 +555,6 @@ async function uploadFiles(token, repo, files, folder, ts) {
   return urls;
 }
 
-// ── 日記送信 ──
 async function submitDiary() {
   const text = document.getElementById('diary-text').value.trim();
   if (!text && !pendingFiles.diary.length) {
@@ -652,11 +566,10 @@ async function submitDiary() {
 
   const btn = document.getElementById('diary-submit');
   btn.disabled = true; btn.textContent = '送信中…';
-
   try {
     let imageUrls = [];
     if (pendingFiles.diary.length) {
-      showStatus('diary', `📷 画像アップロード中…`, 'ok');
+      showStatus('diary', '📷 画像アップロード中…', 'ok');
       imageUrls = await uploadFiles(token, repo, pendingFiles.diary, 'inbox/images', tsStr);
     }
     const tags = getSelectedTags('diary');
@@ -668,11 +581,10 @@ async function submitDiary() {
     await ghPut(token, repo, `inbox/${dateStr}_${tsStr}.txt`,
       `diary: ${dateStr} ${timeStr}`, btoa(unescape(encodeURIComponent(entry))));
 
-    if (tags.length) incrementTagCounts(tags);
+    if (tags.length) incrementTagCounts('diary', tags);
     showStatus('diary', `✅ 保存しました（${dateStr} ${timeStr}）`, 'ok');
     document.getElementById('diary-text').value = '';
-    pendingFiles.diary = []; renderPreviews('diary');
-    renderTags('diary');
+    pendingFiles.diary = []; renderPreviews('diary'); renderTags('diary');
   } catch(e) {
     showStatus('diary', `❌ 送信失敗: ${e.message}`, 'err');
   } finally {
@@ -680,10 +592,9 @@ async function submitDiary() {
   }
 }
 
-// ── 仕事メモ送信 ──
 async function submitMemo() {
-  const text   = document.getElementById('memo-text').value.trim();
-  const client = document.getElementById('memo-client').value.trim() || 'internal';
+  const text  = document.getElementById('memo-text').value.trim();
+  const title = document.getElementById('memo-client').value.trim();
   if (!text && !pendingFiles.memo.length) {
     showStatus('memo', 'メモを入力してください', 'err'); return;
   }
@@ -693,26 +604,30 @@ async function submitMemo() {
 
   const btn = document.getElementById('memo-submit');
   btn.disabled = true; btn.textContent = '保存中…';
-
   try {
     let fileUrls = [];
     if (pendingFiles.memo.length) {
-      showStatus('memo', `📎 ファイルアップロード中…`, 'ok');
+      showStatus('memo', '📎 ファイルアップロード中…', 'ok');
       fileUrls = await uploadFiles(token, repo, pendingFiles.memo, 'workmemo/files', tsStr);
     }
-    const tags = getSelectedTags('memo');
-    let entry = `[CLIENT: ${client}]\n[TAGS: ${tags.join(', ')}]\n[TIME: ${timeStr}]\n${text}\n`;
+    const tags     = getSelectedTags('memo');
+    const workType = getSelectedType();
+    let entry = `[CLIENT: ${workType}]\n`;
+    if (title)       entry += `[TITLE: ${title}]\n`;
+    if (tags.length) entry += `[TAGS: ${tags.join(', ')}]\n`;
+    entry += `[TIME: ${timeStr}]\n`;
+    if (title)       entry += `${title}\n`;
+    entry += `${text}\n`;
     if (fileUrls.length) entry += '\n' + fileUrls.map(u => `[FILE: ${u}]`).join('\n') + '\n';
 
     await ghPut(token, repo, `workmemo/${dateStr}_${tsStr}.txt`,
-      `memo: ${client} ${dateStr} ${timeStr}`, btoa(unescape(encodeURIComponent(entry))));
+      `memo: ${workType} ${dateStr} ${timeStr}`, btoa(unescape(encodeURIComponent(entry))));
 
-    incrementTagCounts(tags);
-    showStatus('memo', `✅ 保存しました（${client}）`, 'ok');
+    if (tags.length) incrementTagCounts('memo', tags);
+    showStatus('memo', `✅ 保存しました（${workType}${title ? ' / ' + title : ''}）`, 'ok');
     document.getElementById('memo-text').value = '';
     document.getElementById('memo-client').value = '';
-    pendingFiles.memo = []; renderPreviews('memo');
-    renderTags('memo');
+    pendingFiles.memo = []; renderPreviews('memo'); renderTags('memo');
   } catch(e) {
     showStatus('memo', `❌ 送信失敗: ${e.message}`, 'err');
   } finally {
