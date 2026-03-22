@@ -1,0 +1,6 @@
+[CLIENT: internal]
+[TITLE: GIF]
+[TAGS: work/mercer, custom/GIF]
+[TIME: 23:00]
+GIF
+GIFの資料準備、FWIの資料作り、シスコの資料作りで終わった1日だった。。AIの利用がまだ難しいと感じる。
