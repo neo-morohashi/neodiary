@@ -1,9 +1,0 @@
-[CLIENT: external]
-[TITLE: LinkedIn 石坂さん]
-[TAGS: work/mercer, custom/コラボ]
-[TIME: 14:18]
-LinkedIn 石坂さん
-昨晩は草鹿さんとゴブリンでディナー。先日の勉強会お礼。スキルインテリジェンスとラーニングの協業をリクエストされる。いろいろ盛り上がって4時間、疲れた。。
-
-[FILE: https://raw.githubusercontent.com/neo-morohashi/neodiary/main/workmemo/files/2026-03-26_141859_1.jpeg]
-[FILE: https://raw.githubusercontent.com/neo-morohashi/neodiary/main/workmemo/files/2026-03-26_141859_2.jpeg]
