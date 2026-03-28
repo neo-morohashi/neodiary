@@ -1,0 +1,5 @@
+[11:57]
+[TAGS: custom/lifelog, custom/diary]
+Mermaidで表記した最新のdiaryシステム構造
+
+![画像](https://raw.githubusercontent.com/neo-morohashi/neodiary/main/inbox/images/2026-03-28_115738_1.png)
