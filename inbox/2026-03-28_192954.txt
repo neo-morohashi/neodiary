@@ -1,0 +1,5 @@
+[19:29]
+[TAGS: custom/Claude]
+Claude 4D framework for AI Fluency
+
+![画像](https://raw.githubusercontent.com/neo-morohashi/neodiary/main/inbox/images/2026-03-28_192954_1.png)
