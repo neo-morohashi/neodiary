@@ -1,0 +1,8 @@
+[20:56]
+[TAGS: custom/AI, custom/Mercer, custom/HR]
+EngagementサーベイのClaude分析
+
+https://hub.ku2t-lab.com/people-analytics-llm-challenge/
+---
+📎 Claudeでピープルアナリティクスを試す──LLMが賢くなるほど、使う側が試される
+📝 Claudeにピープルアナリティクスを任せるとあっという間にレポートが出来上がる。しかし分析プロセスを詳しく見ると、相関と因果の取り違え、一貫性の欠けたコード、もっともらしいが問題のある提言内容が見えてきた。LLMが自律的になるほど、使う側の評価スキルが試される。
