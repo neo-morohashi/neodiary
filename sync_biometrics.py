@@ -17,6 +17,7 @@ import time
 import sqlite3
 import requests
 from pathlib import Path
+from diary_utils import DIARY_DIR, ensure_diary
 from datetime import date, timedelta
 from dotenv import load_dotenv
 
@@ -28,7 +29,6 @@ WHOOP_CLIENT_SECRET  = os.environ.get('WHOOP_CLIENT_SECRET', '')
 WHOOP_REFRESH_TOKEN  = os.environ.get('WHOOP_REFRESH_TOKEN', '')
 WHOOP_ACCESS_TOKEN   = os.environ.get('WHOOP_ACCESS_TOKEN', '')
 
-DIARY_DIR = Path.home() / 'Documents/NeoBrain/diary'
 DB_PATH   = Path(__file__).parent / 'data/biometrics.db'
 
 OURA_BASE  = 'https://api.ouraring.com/v2/usercollection'
@@ -98,12 +98,18 @@ def fetch_oura(date_str: str) -> dict:
             result['sleep_score'] = data[0].get('score')
 
     # Detailed sleep: HRV (ms), RHR (bpm), total duration (sec)
-    r = _get(f'{OURA_BASE}/sleep', headers=headers, params=params)
+    # Oura /sleep returns empty when start_date == end_date; query from day-1 and filter
+    target_date = date.fromisoformat(date_str)
+    r = _get(f'{OURA_BASE}/sleep', headers=headers, params={
+        'start_date': (target_date - timedelta(days=1)).isoformat(),
+        'end_date': date_str,
+    })
     if r and r.ok:
-        data = r.json().get('data', [])
+        data = [x for x in r.json().get('data', []) if x.get('day') == date_str]
         if data:
-            # 複数ある場合は最長の sleep を選ぶ
-            main = max(data, key=lambda x: x.get('total_sleep_duration') or 0)
+            # 複数ある場合は最長の long_sleep を優先
+            long_sleeps = [x for x in data if x.get('type') == 'long_sleep']
+            main = max(long_sleeps or data, key=lambda x: x.get('total_sleep_duration') or 0)
             result['hrv']         = main.get('average_hrv')
             result['rhr']         = main.get('lowest_heart_rate')
             total_sec = main.get('total_sleep_duration') or 0
@@ -263,9 +269,7 @@ def update_diary_biometrics(date_str: str, block: str):
     if not block:
         return
     diary_path = DIARY_DIR / f'{date_str}.md'
-    if not diary_path.exists():
-        print(f'  [diary] {diary_path} が存在しないのでスキップ')
-        return
+    ensure_diary(date_str)
 
     content = diary_path.read_text(encoding='utf-8')
     header  = '## 💤 バイオメトリクス'
