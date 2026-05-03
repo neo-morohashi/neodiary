@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Open in Obsidian…</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+         max-width: 560px; margin: 4em auto; padding: 0 1em; color: #222; line-height: 1.6; }
+  h1 { font-size: 1.2em; }
+  code { background: #f4f4f4; padding: 1px 6px; border-radius: 3px; font-size: 0.9em; }
+  a { color: #0a66c2; word-break: break-all; }
+  .small { color: #888; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<h1>Opening in Obsidian…</h1>
+<p>If your browser doesn't open Obsidian automatically, tap the link below.</p>
+<p><a id="manual" href="#">Open in Obsidian</a></p>
+<p class="small">Vault: <code id="vault-name"></code><br>File: <code id="file-name"></code></p>
+<script>
+  (function () {
+    const params = new URLSearchParams(location.search);
+    const vault = params.get("vault") || "NeoBrain";
+    const file  = params.get("p") || params.get("file") || "";
+    const uri = "obsidian://open?vault=" + encodeURIComponent(vault) +
+                "&file="  + encodeURIComponent(file);
+
+    document.getElementById("vault-name").textContent = vault;
+    document.getElementById("file-name").textContent  = file || "(none)";
+
+    const link = document.getElementById("manual");
+    link.href = uri;
+
+    // Auto-redirect: most browsers treat a same-task assignment as user intent
+    // when the page loaded from a clicked link.
+    if (file) {
+      setTimeout(function () { location.href = uri; }, 50);
+    }
+  })();
+</script>
+</body>
+</html>
