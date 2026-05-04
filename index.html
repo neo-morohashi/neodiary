@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="NeoBrain">
+<meta name="theme-color" content="#080810">
 <style>
   :root {
     --bg:            #080810;
@@ -22,6 +23,9 @@
     --accent:        #6366f1;
     --accent2:       #8b5cf6;
     --accent-glow:   rgba(99,102,241,0.35);
+    --work:          #10b981;
+    --work2:         #059669;
+    --work-glow:     rgba(16,185,129,0.3);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   ::-webkit-scrollbar { width: 4px; }
@@ -47,11 +51,19 @@
     width: 500px; height: 500px;
     top: -180px; left: -180px;
     background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+    transition: background 0.4s;
   }
   body::after {
     width: 400px; height: 400px;
     bottom: -120px; right: -120px;
     background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+    transition: background 0.4s;
+  }
+  body.work-mode::before {
+    background: radial-gradient(circle, rgba(16,185,129,0.14) 0%, transparent 70%);
+  }
+  body.work-mode::after {
+    background: radial-gradient(circle, rgba(5,150,105,0.10) 0%, transparent 70%);
   }
   .header {
     padding: 16px 16px 0;
@@ -70,7 +82,7 @@
   .header .date { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
   .settings-icon { font-size: 20px; cursor: pointer; color: var(--text-secondary); padding: 4px; transition: color 0.15s; }
   .settings-icon:hover { color: var(--text-primary); }
-  .tabs {
+  .mode-toggle {
     display: flex; gap: 2px;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -78,7 +90,7 @@
     margin: 14px 16px;
     position: relative; z-index: 1;
   }
-  .tab {
+  .mode-btn {
     flex: 1; padding: 8px 20px;
     text-align: center; font-size: 14px; font-weight: 600;
     border-radius: 8px; cursor: pointer;
@@ -86,19 +98,22 @@
     transition: all 0.2s;
     border: none; background: transparent; font-family: inherit;
   }
-  .tab:hover { color: var(--text-primary); background: var(--surface-hover); }
-  .tab.active {
+  .mode-btn:hover { color: var(--text-primary); background: var(--surface-hover); }
+  .mode-btn.active {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff;
     box-shadow: 0 2px 12px var(--accent-glow);
+  }
+  body.work-mode .mode-btn.active {
+    background: linear-gradient(135deg, var(--work2), var(--work));
+    box-shadow: 0 2px 12px var(--work-glow);
   }
   .content {
     flex: 1; padding: 0 16px 20px;
     display: flex; flex-direction: column;
     position: relative; z-index: 1;
+    gap: 10px;
   }
-  .panel { display: none; flex-direction: column; flex: 1; gap: 10px; }
-  .panel.active { display: flex; }
   #settingsPanel {
     display: none;
     background: rgba(255,255,255,0.05);
@@ -132,12 +147,18 @@
     border-color: rgba(99,102,241,0.5);
     box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
   }
+  body.work-mode textarea:focus, body.work-mode .text-input:focus {
+    border-color: rgba(16,185,129,0.5);
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.12);
+  }
   .field-label {
     font-size: 12px; font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
   }
   .field { display: flex; flex-direction: column; }
+  .work-only { display: none; }
+  body.work-mode .work-only { display: flex; }
   .type-toggle {
     display: inline-flex; gap: 2px;
     background: var(--surface);
@@ -155,8 +176,8 @@
   }
   .type-btn:hover { color: var(--text-primary); background: var(--surface-hover); }
   .type-btn.active {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff; box-shadow: 0 2px 8px rgba(99,102,241,0.4);
+    background: linear-gradient(135deg, var(--work2), var(--work));
+    color: #fff; box-shadow: 0 2px 8px var(--work-glow);
   }
   .image-preview { display: none; gap: 8px; flex-wrap: wrap; }
   .img-wrap { position: relative; display: inline-block; }
@@ -182,6 +203,12 @@
     background: rgba(99,102,241,0.2);
     color: #a5b4fc; box-shadow: 0 0 10px rgba(99,102,241,0.2);
   }
+  body.work-mode .chip:hover { border-color: rgba(16,185,129,0.4); }
+  body.work-mode .chip.selected {
+    border-color: rgba(16,185,129,0.6);
+    background: rgba(16,185,129,0.2);
+    color: #6ee7b7; box-shadow: 0 0 10px rgba(16,185,129,0.2);
+  }
   .tag-add-row { display: flex; gap: 6px; margin-top: 6px; }
   .tag-add-row input {
     flex: 1; padding: 5px 12px;
@@ -192,6 +219,7 @@
   }
   .tag-add-row input::placeholder { color: var(--text-muted); }
   .tag-add-row input:focus { border-color: rgba(99,102,241,0.5); }
+  body.work-mode .tag-add-row input:focus { border-color: rgba(16,185,129,0.5); }
   .tag-add-btn {
     flex: 0 0 auto; padding: 5px 14px;
     border: 1px solid var(--border-strong) !important;
@@ -201,6 +229,7 @@
     cursor: pointer; -webkit-appearance: none; transition: color 0.15s, border-color 0.15s;
   }
   .tag-add-btn:hover { color: var(--text-primary) !important; border-color: rgba(99,102,241,0.4) !important; }
+  body.work-mode .tag-add-btn:hover { border-color: rgba(16,185,129,0.4) !important; }
   .buttons { display: flex; gap: 8px; }
   button {
     flex: 1; padding: 14px; border: none; border-radius: 12px;
@@ -215,18 +244,17 @@
   }
   .btn-icon:hover { background: var(--surface-hover); color: var(--text-primary); }
   .btn-icon.recording { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.5); color: #fca5a5; }
-  .btn-primary {
+  .btn-submit {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff; box-shadow: 0 4px 20px var(--accent-glow);
   }
-  .btn-primary:hover:not(:disabled) { box-shadow: 0 6px 28px rgba(99,102,241,0.5); }
-  .btn-primary:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
-  .btn-green {
-    background: linear-gradient(135deg, #059669, #10b981);
-    color: #fff; box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+  .btn-submit:hover:not(:disabled) { box-shadow: 0 6px 28px rgba(99,102,241,0.5); }
+  .btn-submit:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
+  body.work-mode .btn-submit {
+    background: linear-gradient(135deg, var(--work2), var(--work));
+    box-shadow: 0 4px 20px var(--work-glow);
   }
-  .btn-green:hover:not(:disabled) { box-shadow: 0 6px 28px rgba(16,185,129,0.45); }
-  .btn-green:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
+  body.work-mode .btn-submit:hover:not(:disabled) { box-shadow: 0 6px 28px rgba(16,185,129,0.45); }
   .btn-settings {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff; padding: 10px; border-radius: 8px;
@@ -258,69 +286,46 @@
   <button class="btn-settings" onclick="saveSettings()">保存</button>
 </div>
 
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('diary', this)">Personal</button>
-  <button class="tab" onclick="switchTab('memo', this)">Work</button>
+<div class="mode-toggle">
+  <button class="mode-btn active" data-mode="personal" onclick="switchMode('personal')">Personal</button>
+  <button class="mode-btn" data-mode="work" onclick="switchMode('work')">Work</button>
 </div>
 
 <div class="content">
 
-  <!-- Personal パネル -->
-  <div class="panel active" id="panel-diary">
-    <textarea id="diary-text" rows="7" placeholder="今日の記録を入力（音声入力も使えます）"></textarea>
-    <div class="field">
-      <div class="field-label">タグ</div>
-      <div class="tag-chips" id="diary-tag-chips"></div>
-      <div class="tag-add-row">
-        <input type="text" id="diary-tag-input" placeholder="カスタムタグを追加…"
-          onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTag('diary');}">
-        <button class="tag-add-btn" onclick="addCustomTag('diary')">＋追加</button>
-      </div>
-    </div>
-    <div class="image-preview" id="diary-preview"></div>
-    <input type="file" id="diary-file-input" accept="image/*" multiple style="display:none"
-      onchange="onFilesSelected(event,'diary')">
-    <div class="buttons">
-      <button class="btn-icon" id="diary-mic" onclick="toggleMic('diary')" title="音声入力">🎤</button>
-      <button class="btn-icon" onclick="document.getElementById('diary-file-input').click()" title="写真">📷</button>
-      <button class="btn-primary" id="diary-submit" onclick="submitDiary()">送信</button>
-    </div>
-    <div class="status" id="diary-status"></div>
+  <!-- Work 専用: Internal/External + タイトル -->
+  <div class="type-toggle work-only">
+    <button class="type-btn active" data-type="internal" onclick="selectType(this)">Internal</button>
+    <button class="type-btn" data-type="external" onclick="selectType(this)">External</button>
+  </div>
+  <div class="field work-only">
+    <div class="field-label">タイトル</div>
+    <input type="text" class="text-input" id="title-input" placeholder="プロジェクト・案件名">
   </div>
 
-  <!-- Work パネル -->
-  <div class="panel" id="panel-memo">
-    <div class="type-toggle">
-      <button class="type-btn active" data-type="internal" onclick="selectType(this)">Internal</button>
-      <button class="type-btn" data-type="external" onclick="selectType(this)">External</button>
+  <!-- 共通本文 -->
+  <textarea id="main-text" rows="7" placeholder="今日の記録を入力（音声入力も使えます）"></textarea>
+
+  <div class="field">
+    <div class="field-label">タグ</div>
+    <div class="tag-chips" id="tag-chips"></div>
+    <div class="tag-add-row">
+      <input type="text" id="tag-input" placeholder="カスタムタグを追加…"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTag();}">
+      <button class="tag-add-btn" onclick="addCustomTag()">＋追加</button>
     </div>
-    <div class="field">
-      <div class="field-label">タイトル</div>
-      <input type="text" class="text-input" id="memo-client" placeholder="プロジェクト・案件名">
-    </div>
-    <div class="field">
-      <div class="field-label">メモ</div>
-      <textarea id="memo-text" rows="5" placeholder="案件・気づき・URLなど自由に入力"></textarea>
-    </div>
-    <div class="field">
-      <div class="field-label">タグ</div>
-      <div class="tag-chips" id="memo-tag-chips"></div>
-      <div class="tag-add-row">
-        <input type="text" id="memo-tag-input" placeholder="カスタムタグを追加…"
-          onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTag('memo');}">
-        <button class="tag-add-btn" onclick="addCustomTag('memo')">＋追加</button>
-      </div>
-    </div>
-    <div class="image-preview" id="memo-preview"></div>
-    <input type="file" id="memo-file-input" accept="image/*,application/pdf,.doc,.docx,.ppt,.pptx"
-      multiple style="display:none" onchange="onFilesSelected(event,'memo')">
-    <div class="buttons">
-      <button class="btn-icon" id="memo-mic" onclick="toggleMic('memo')" title="音声入力">🎤</button>
-      <button class="btn-icon" onclick="document.getElementById('memo-file-input').click()" title="ファイル添付">📎</button>
-      <button class="btn-green" id="memo-submit" onclick="submitMemo()">保存</button>
-    </div>
-    <div class="status" id="memo-status"></div>
   </div>
+
+  <div class="image-preview" id="file-preview"></div>
+  <input type="file" id="file-input" accept="*/*" multiple style="display:none"
+    onchange="onFilesSelected(event)">
+
+  <div class="buttons">
+    <button class="btn-icon" id="mic-btn" onclick="toggleMic()" title="音声入力">🎤</button>
+    <button class="btn-icon" onclick="document.getElementById('file-input').click()" title="ファイル添付">📎</button>
+    <button class="btn-submit" id="submit-btn" onclick="submit()">送信</button>
+  </div>
+  <div class="status" id="status"></div>
 
 </div>
 
@@ -332,12 +337,13 @@ const timeStr = `${pad(today.getHours())}:${pad(today.getMinutes())}`;
 const tsStr   = `${pad(today.getHours())}${pad(today.getMinutes())}${pad(today.getSeconds())}`;
 document.getElementById('dateLabel').textContent = dateStr;
 
+let currentMode = 'personal';
+
 (function() {
   const p = location.search;
   if (p.startsWith('?url=')) {
     const sharedUrl = decodeURIComponent(p.slice(5));
-    const ta = document.getElementById('diary-text');
-    // カーソルをURLより上（先頭）に置き、メモを書けるようにする
+    const ta = document.getElementById('main-text');
     ta.value = '\n\n' + sharedUrl;
     ta.setSelectionRange(0, 0);
     ta.focus();
@@ -348,7 +354,6 @@ document.getElementById('dateLabel').textContent = dateStr;
 
 async function fetchAndAppendSnippet(ta, url) {
   let html = null;
-  // 直接フェッチを試みる
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 5000);
@@ -356,7 +361,6 @@ async function fetchAndAppendSnippet(ta, url) {
     clearTimeout(timer);
     if (res.ok) html = await res.text();
   } catch {}
-  // CORS プロキシにフォールバック
   if (!html) {
     try {
       const ctrl = new AbortController();
@@ -381,11 +385,19 @@ async function fetchAndAppendSnippet(ta, url) {
   ta.value += snippet;
 }
 
-function switchTab(name, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('panel-' + name).classList.add('active');
+function switchMode(mode) {
+  currentMode = mode;
+  document.body.classList.toggle('work-mode', mode === 'work');
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  // プレースホルダ・ボタン文言の差し替え
+  const ta = document.getElementById('main-text');
+  ta.placeholder = mode === 'work'
+    ? '案件・気づき・URLなど自由に入力'
+    : '今日の記録を入力（音声入力も使えます）';
+  document.getElementById('submit-btn').textContent = mode === 'work' ? '保存' : '送信';
+  renderTags();
 }
 
 function selectType(btn) {
@@ -404,7 +416,7 @@ function loadSettings() {
 function saveSettings() {
   localStorage.setItem('gh_token', document.getElementById('inputToken').value.trim());
   localStorage.setItem('gh_repo',  document.getElementById('inputRepo').value.trim());
-  showStatus('diary', '✅ 設定を保存しました', 'ok');
+  showStatus('✅ 設定を保存しました', 'ok');
   setTimeout(() => document.getElementById('settingsPanel').style.display = 'none', 800);
 }
 function toggleSettings() {
@@ -413,8 +425,8 @@ function toggleSettings() {
   loadSettings();
 }
 
-function showStatus(tab, msg, type) {
-  const el = document.getElementById(`${tab}-status`);
+function showStatus(msg, type) {
+  const el = document.getElementById('status');
   el.textContent = msg; el.className = `status ${type}`; el.style.display = 'block';
   if (type === 'ok') setTimeout(() => el.style.display = 'none', 2500);
 }
@@ -438,22 +450,24 @@ function getCustomTags(k)   { return JSON.parse(localStorage.getItem(k) || '[]')
 function saveTagCounts(k,c) { localStorage.setItem(k, JSON.stringify(c)); }
 function saveCustomTags(k,t){ localStorage.setItem(k, JSON.stringify(t)); }
 
-function renderTags(tab) {
-  const isWork   = tab === 'memo';
-  const baseTags = isWork ? WORK_TAGS : PERSONAL_TAGS;
-  const cKey     = isWork ? 'work_tag_counts'  : 'tag_counts';
-  const ctKey    = isWork ? 'work_custom_tags' : 'custom_tags';
-  const counts   = getTagCounts(cKey);
-  const custom   = getCustomTags(ctKey);
-  const all = [...baseTags, ...custom.map(t => ({ tag: t, label: t.split('/').pop() }))];
+function tagKeys() {
+  return currentMode === 'work'
+    ? { base: WORK_TAGS,     count: 'work_tag_counts',  custom: 'work_custom_tags' }
+    : { base: PERSONAL_TAGS, count: 'tag_counts',       custom: 'custom_tags' };
+}
+
+function renderTags() {
+  const { base, count, custom } = tagKeys();
+  const counts   = getTagCounts(count);
+  const customs  = getCustomTags(custom);
+  const all = [...base, ...customs.map(t => ({ tag: t, label: t.split('/').pop() }))];
   all.sort((a, b) => (counts[b.tag] || 0) - (counts[a.tag] || 0));
 
-  const container = document.getElementById(`${tab}-tag-chips`);
-  const selected  = new Set(getSelectedTags(tab));
+  const container = document.getElementById('tag-chips');
   container.innerHTML = '';
   all.forEach(({ tag, label }) => {
     const chip = document.createElement('div');
-    chip.className = 'chip' + (selected.has(tag) ? ' selected' : '');
+    chip.className = 'chip';
     chip.dataset.tag = tag;
     chip.textContent = label;
     chip.addEventListener('click', () => chip.classList.toggle('selected'));
@@ -461,53 +475,51 @@ function renderTags(tab) {
   });
 }
 
-function addCustomTag(tab) {
-  const isWork = tab === 'memo';
-  const ctKey  = isWork ? 'work_custom_tags' : 'custom_tags';
-  const input  = document.getElementById(`${tab}-tag-input`);
-  const raw    = input.value.trim().replace(/\s+/g, '_');
+function addCustomTag() {
+  const { custom } = tagKeys();
+  const input = document.getElementById('tag-input');
+  const raw   = input.value.trim().replace(/\s+/g, '_');
   if (!raw) return;
   const tag    = raw.includes('/') ? raw : `custom/${raw}`;
-  const custom = getCustomTags(ctKey);
-  if (!custom.includes(tag)) { custom.push(tag); saveCustomTags(ctKey, custom); }
+  const list   = getCustomTags(custom);
+  if (!list.includes(tag)) { list.push(tag); saveCustomTags(custom, list); }
   input.value = '';
-  renderTags(tab);
-  document.querySelectorAll(`#${tab}-tag-chips .chip`).forEach(c => {
+  renderTags();
+  document.querySelectorAll('#tag-chips .chip').forEach(c => {
     if (c.dataset.tag === tag) c.classList.add('selected');
   });
 }
 
-function getSelectedTags(tab) {
-  return Array.from(document.querySelectorAll(`#${tab}-tag-chips .chip.selected`)).map(c => c.dataset.tag);
+function getSelectedTags() {
+  return Array.from(document.querySelectorAll('#tag-chips .chip.selected')).map(c => c.dataset.tag);
 }
-function incrementTagCounts(tab, tags) {
-  const key = tab === 'memo' ? 'work_tag_counts' : 'tag_counts';
-  const counts = getTagCounts(key);
+function incrementTagCounts(tags) {
+  const { count } = tagKeys();
+  const counts = getTagCounts(count);
   tags.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
-  saveTagCounts(key, counts);
+  saveTagCounts(count, counts);
 }
 
-renderTags('diary');
-renderTags('memo');
+renderTags();
 
-let recognitions = {};
-function toggleMic(tab) {
+let recognition = null;
+function toggleMic() {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    showStatus(tab, 'このブラウザは音声入力に対応していません', 'err'); return;
+    showStatus('このブラウザは音声入力に対応していません', 'err'); return;
   }
-  const btn = document.getElementById(`${tab}-mic`);
-  if (recognitions[tab]) { recognitions[tab].stop(); return; }
+  const btn = document.getElementById('mic-btn');
+  if (recognition) { recognition.stop(); return; }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const r = new SR();
   r.lang = 'ja-JP'; r.continuous = true; r.interimResults = false;
   r.onstart = () => { btn.classList.add('recording'); btn.textContent = '⏹'; };
   r.onresult = e => {
     const t = Array.from(e.results).map(r => r[0].transcript).join('');
-    const ta = document.getElementById(`${tab}-text`);
+    const ta = document.getElementById('main-text');
     ta.value = ta.value ? ta.value + '\n' + t : t;
   };
-  r.onend = () => { btn.classList.remove('recording'); btn.textContent = '🎤'; delete recognitions[tab]; };
-  recognitions[tab] = r; r.start();
+  r.onend = () => { btn.classList.remove('recording'); btn.textContent = '🎤'; recognition = null; };
+  recognition = r; r.start();
 }
 
 function compressImage(file, maxBytes) {
@@ -542,23 +554,22 @@ function compressImage(file, maxBytes) {
   });
 }
 
-const pendingFiles = { diary: [], memo: [] };
-async function onFilesSelected(event, tab) {
+const pendingFiles = [];
+async function onFilesSelected(event) {
   const files = Array.from(event.target.files);
   event.target.value = '';
   for (const file of files) {
     const dataUrl = await compressImage(file, 900 * 1024);
-    pendingFiles[tab].push({ file, dataUrl, b64: dataUrl.split(',')[1] });
-    renderPreviews(tab);
+    pendingFiles.push({ file, dataUrl, b64: dataUrl.split(',')[1] });
+    renderPreviews();
   }
 }
-function renderPreviews(tab) {
-  const area = document.getElementById(`${tab}-preview`);
+function renderPreviews() {
+  const area = document.getElementById('file-preview');
   area.innerHTML = '';
-  const files = pendingFiles[tab];
-  if (!files.length) { area.style.display = 'none'; return; }
+  if (!pendingFiles.length) { area.style.display = 'none'; return; }
   area.style.display = 'flex';
-  files.forEach((item, idx) => {
+  pendingFiles.forEach((item, idx) => {
     const wrap = document.createElement('div');
     wrap.className = 'img-wrap';
     if (item.file.type.startsWith('image/')) {
@@ -570,7 +581,7 @@ function renderPreviews(tab) {
     }
     const btn = document.createElement('button');
     btn.className = 'img-remove'; btn.textContent = '×';
-    btn.onclick = () => { pendingFiles[tab].splice(idx, 1); renderPreviews(tab); };
+    btn.onclick = () => { pendingFiles.splice(idx, 1); renderPreviews(); };
     wrap.appendChild(btn); area.appendChild(wrap);
   });
 }
@@ -601,83 +612,81 @@ async function uploadFiles(token, repo, files, folder, ts) {
   return urls;
 }
 
-async function submitDiary() {
-  const text = document.getElementById('diary-text').value.trim();
-  if (!text && !pendingFiles.diary.length) {
-    showStatus('diary', 'テキストまたは画像を入力してください', 'err'); return;
+async function submit() {
+  const text = document.getElementById('main-text').value.trim();
+  if (!text && !pendingFiles.length) {
+    showStatus('テキストまたはファイルを入力してください', 'err'); return;
   }
   const token = localStorage.getItem('gh_token');
   const repo  = localStorage.getItem('gh_repo');
-  if (!token || !repo) { showStatus('diary', '⚙️ 設定からTokenとリポジトリを入力してください', 'err'); toggleSettings(); return; }
-
-  const btn = document.getElementById('diary-submit');
-  btn.disabled = true; btn.textContent = '送信中…';
-  try {
-    let imageUrls = [];
-    if (pendingFiles.diary.length) {
-      showStatus('diary', '📷 画像アップロード中…', 'ok');
-      imageUrls = await uploadFiles(token, repo, pendingFiles.diary, 'inbox/images', tsStr);
-    }
-    const tags = getSelectedTags('diary');
-    let entry = `[${timeStr}]\n`;
-    if (tags.length) entry += `[TAGS: ${tags.join(', ')}]\n`;
-    entry += `${text}\n`;
-    if (imageUrls.length) entry += '\n' + imageUrls.map(u => `![画像](${u})`).join('\n') + '\n';
-
-    await ghPut(token, repo, `inbox/${dateStr}_${tsStr}.txt`,
-      `diary: ${dateStr} ${timeStr}`, btoa(unescape(encodeURIComponent(entry))));
-
-    if (tags.length) incrementTagCounts('diary', tags);
-    showStatus('diary', `✅ 保存しました（${dateStr} ${timeStr}）`, 'ok');
-    document.getElementById('diary-text').value = '';
-    pendingFiles.diary = []; renderPreviews('diary'); renderTags('diary');
-  } catch(e) {
-    showStatus('diary', `❌ 送信失敗: ${e.message}`, 'err');
-  } finally {
-    btn.disabled = false; btn.textContent = '送信';
+  if (!token || !repo) {
+    showStatus('⚙️ 設定からTokenとリポジトリを入力してください', 'err'); toggleSettings(); return;
   }
-}
 
-async function submitMemo() {
-  const text  = document.getElementById('memo-text').value.trim();
-  const title = document.getElementById('memo-client').value.trim();
-  if (!text && !pendingFiles.memo.length) {
-    showStatus('memo', 'メモを入力してください', 'err'); return;
-  }
-  const token = localStorage.getItem('gh_token');
-  const repo  = localStorage.getItem('gh_repo');
-  if (!token || !repo) { showStatus('memo', '⚙️ 設定からTokenとリポジトリを入力してください', 'err'); toggleSettings(); return; }
-
-  const btn = document.getElementById('memo-submit');
-  btn.disabled = true; btn.textContent = '保存中…';
+  const btn = document.getElementById('submit-btn');
+  const labelDefault = currentMode === 'work' ? '保存' : '送信';
+  btn.disabled = true; btn.textContent = currentMode === 'work' ? '保存中…' : '送信中…';
   try {
+    const isWork = currentMode === 'work';
+    const filesFolder = isWork ? 'workmemo/files' : 'inbox/images';
+    const entryFolder = isWork ? 'workmemo' : 'inbox';
+
     let fileUrls = [];
-    if (pendingFiles.memo.length) {
-      showStatus('memo', '📎 ファイルアップロード中…', 'ok');
-      fileUrls = await uploadFiles(token, repo, pendingFiles.memo, 'workmemo/files', tsStr);
+    if (pendingFiles.length) {
+      showStatus(isWork ? '📎 ファイルアップロード中…' : '📷 ファイルアップロード中…', 'ok');
+      fileUrls = await uploadFiles(token, repo, pendingFiles, filesFolder, tsStr);
     }
-    const tags     = getSelectedTags('memo');
-    const workType = getSelectedType();
-    let entry = `[CLIENT: ${workType}]\n`;
-    if (title)       entry += `[TITLE: ${title}]\n`;
-    if (tags.length) entry += `[TAGS: ${tags.join(', ')}]\n`;
-    entry += `[TIME: ${timeStr}]\n`;
-    if (title)       entry += `${title}\n`;
-    entry += `${text}\n`;
-    if (fileUrls.length) entry += '\n' + fileUrls.map(u => `[FILE: ${u}]`).join('\n') + '\n';
+    const tags = getSelectedTags();
 
-    await ghPut(token, repo, `workmemo/${dateStr}_${tsStr}.txt`,
-      `memo: ${workType} ${dateStr} ${timeStr}`, btoa(unescape(encodeURIComponent(entry))));
+    let entry;
+    if (isWork) {
+      const title    = document.getElementById('title-input').value.trim();
+      const workType = getSelectedType();
+      entry  = `[CLIENT: ${workType}]\n`;
+      if (title)       entry += `[TITLE: ${title}]\n`;
+      if (tags.length) entry += `[TAGS: ${tags.join(', ')}]\n`;
+      entry += `[TIME: ${timeStr}]\n`;
+      if (title)       entry += `${title}\n`;
+      entry += `${text}\n`;
+      if (fileUrls.length) {
+        entry += '\n' + fileUrls.map(u => {
+          const isImg = /\.(png|jpe?g|gif|webp|heic)$/i.test(u);
+          return isImg ? `![画像](${u})` : `[FILE: ${u}]`;
+        }).join('\n') + '\n';
+      }
+    } else {
+      entry = `[${timeStr}]\n`;
+      if (tags.length) entry += `[TAGS: ${tags.join(', ')}]\n`;
+      entry += `${text}\n`;
+      if (fileUrls.length) {
+        entry += '\n' + fileUrls.map(u => {
+          const isImg = /\.(png|jpe?g|gif|webp|heic)$/i.test(u);
+          return isImg ? `![画像](${u})` : `[FILE: ${u}]`;
+        }).join('\n') + '\n';
+      }
+    }
 
-    if (tags.length) incrementTagCounts('memo', tags);
-    showStatus('memo', `✅ 保存しました（${workType}${title ? ' / ' + title : ''}）`, 'ok');
-    document.getElementById('memo-text').value = '';
-    document.getElementById('memo-client').value = '';
-    pendingFiles.memo = []; renderPreviews('memo'); renderTags('memo');
+    const message = isWork
+      ? `memo: ${getSelectedType()} ${dateStr} ${timeStr}`
+      : `diary: ${dateStr} ${timeStr}`;
+    await ghPut(token, repo, `${entryFolder}/${dateStr}_${tsStr}.txt`,
+      message, btoa(unescape(encodeURIComponent(entry))));
+
+    if (tags.length) incrementTagCounts(tags);
+
+    if (isWork) {
+      const title = document.getElementById('title-input').value.trim();
+      showStatus(`✅ 保存しました（${getSelectedType()}${title ? ' / ' + title : ''}）`, 'ok');
+      document.getElementById('title-input').value = '';
+    } else {
+      showStatus(`✅ 保存しました（${dateStr} ${timeStr}）`, 'ok');
+    }
+    document.getElementById('main-text').value = '';
+    pendingFiles.length = 0; renderPreviews(); renderTags();
   } catch(e) {
-    showStatus('memo', `❌ 送信失敗: ${e.message}`, 'err');
+    showStatus(`❌ 送信失敗: ${e.message}`, 'err');
   } finally {
-    btn.disabled = false; btn.textContent = '保存';
+    btn.disabled = false; btn.textContent = labelDefault;
   }
 }
 </script>
