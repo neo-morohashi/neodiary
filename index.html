@@ -23,9 +23,6 @@
     --accent:        #6366f1;
     --accent2:       #8b5cf6;
     --accent-glow:   rgba(99,102,241,0.35);
-    --work:          #10b981;
-    --work2:         #059669;
-    --work-glow:     rgba(16,185,129,0.3);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   ::-webkit-scrollbar { width: 4px; }
@@ -51,19 +48,11 @@
     width: 500px; height: 500px;
     top: -180px; left: -180px;
     background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
-    transition: background 0.4s;
   }
   body::after {
     width: 400px; height: 400px;
     bottom: -120px; right: -120px;
     background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
-    transition: background 0.4s;
-  }
-  body.work-mode::before {
-    background: radial-gradient(circle, rgba(16,185,129,0.14) 0%, transparent 70%);
-  }
-  body.work-mode::after {
-    background: radial-gradient(circle, rgba(5,150,105,0.10) 0%, transparent 70%);
   }
   .header {
     padding: 16px 16px 0;
@@ -76,40 +65,14 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
   }
   .header h1 { font-size: 18px; font-weight: 700; }
   .header .date { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
   .settings-icon { font-size: 20px; cursor: pointer; color: var(--text-secondary); padding: 4px; transition: color 0.15s; }
   .settings-icon:hover { color: var(--text-primary); }
-  .mode-toggle {
-    display: flex; gap: 2px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px; padding: 4px;
-    margin: 14px 16px;
-    position: relative; z-index: 1;
-  }
-  .mode-btn {
-    flex: 1; padding: 8px 20px;
-    text-align: center; font-size: 14px; font-weight: 600;
-    border-radius: 8px; cursor: pointer;
-    color: var(--text-secondary);
-    transition: all 0.2s;
-    border: none; background: transparent; font-family: inherit;
-  }
-  .mode-btn:hover { color: var(--text-primary); background: var(--surface-hover); }
-  .mode-btn.active {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
-    box-shadow: 0 2px 12px var(--accent-glow);
-  }
-  body.work-mode .mode-btn.active {
-    background: linear-gradient(135deg, var(--work2), var(--work));
-    box-shadow: 0 2px 12px var(--work-glow);
-  }
   .content {
-    flex: 1; padding: 0 16px 20px;
+    flex: 1; padding: 16px;
     display: flex; flex-direction: column;
     position: relative; z-index: 1;
     gap: 10px;
@@ -133,23 +96,19 @@
   }
   #settingsPanel input:focus { border-color: rgba(99,102,241,0.5); }
   #settingsPanel label { font-size: 13px; color: var(--text-secondary); }
-  textarea, .text-input {
+  textarea {
     width: 100%; padding: 12px 14px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px; font-size: 16px; line-height: 1.5;
     color: var(--text-primary); outline: none; font-family: inherit;
     transition: border-color 0.2s, box-shadow 0.2s;
+    resize: none;
   }
-  textarea { resize: none; }
-  textarea::placeholder, .text-input::placeholder { color: var(--text-muted); }
-  textarea:focus, .text-input:focus {
+  textarea::placeholder { color: var(--text-muted); }
+  textarea:focus {
     border-color: rgba(99,102,241,0.5);
     box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
-  }
-  body.work-mode textarea:focus, body.work-mode .text-input:focus {
-    border-color: rgba(16,185,129,0.5);
-    box-shadow: 0 0 0 3px rgba(16,185,129,0.12);
   }
   .field-label {
     font-size: 12px; font-weight: 600;
@@ -157,28 +116,6 @@
     text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
   }
   .field { display: flex; flex-direction: column; }
-  .work-only { display: none; }
-  body.work-mode .work-only { display: flex; }
-  .type-toggle {
-    display: inline-flex; gap: 2px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px; padding: 3px;
-    align-self: flex-start;
-  }
-  .type-btn {
-    padding: 5px 18px; border: none;
-    background: transparent; cursor: pointer;
-    font-size: 13px; font-weight: 600; font-family: inherit;
-    color: var(--text-secondary); border-radius: 7px;
-    transition: all 0.15s; letter-spacing: 0.02em;
-    -webkit-appearance: none;
-  }
-  .type-btn:hover { color: var(--text-primary); background: var(--surface-hover); }
-  .type-btn.active {
-    background: linear-gradient(135deg, var(--work2), var(--work));
-    color: #fff; box-shadow: 0 2px 8px var(--work-glow);
-  }
   .image-preview { display: none; gap: 8px; flex-wrap: wrap; }
   .img-wrap { position: relative; display: inline-block; }
   .img-wrap img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-strong); }
@@ -203,8 +140,7 @@
     background: rgba(99,102,241,0.2);
     color: #a5b4fc; box-shadow: 0 0 10px rgba(99,102,241,0.2);
   }
-  body.work-mode .chip:hover { border-color: rgba(16,185,129,0.4); }
-  body.work-mode .chip.selected {
+  .chip.work-tag.selected {
     border-color: rgba(16,185,129,0.6);
     background: rgba(16,185,129,0.2);
     color: #6ee7b7; box-shadow: 0 0 10px rgba(16,185,129,0.2);
@@ -219,7 +155,6 @@
   }
   .tag-add-row input::placeholder { color: var(--text-muted); }
   .tag-add-row input:focus { border-color: rgba(99,102,241,0.5); }
-  body.work-mode .tag-add-row input:focus { border-color: rgba(16,185,129,0.5); }
   .tag-add-btn {
     flex: 0 0 auto; padding: 5px 14px;
     border: 1px solid var(--border-strong) !important;
@@ -229,7 +164,6 @@
     cursor: pointer; -webkit-appearance: none; transition: color 0.15s, border-color 0.15s;
   }
   .tag-add-btn:hover { color: var(--text-primary) !important; border-color: rgba(99,102,241,0.4) !important; }
-  body.work-mode .tag-add-btn:hover { border-color: rgba(16,185,129,0.4) !important; }
   .buttons { display: flex; gap: 8px; }
   button {
     flex: 1; padding: 14px; border: none; border-radius: 12px;
@@ -243,18 +177,12 @@
     color: var(--text-secondary); transition: background 0.15s, color 0.15s;
   }
   .btn-icon:hover { background: var(--surface-hover); color: var(--text-primary); }
-  .btn-icon.recording { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.5); color: #fca5a5; }
   .btn-submit {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff; box-shadow: 0 4px 20px var(--accent-glow);
   }
   .btn-submit:hover:not(:disabled) { box-shadow: 0 6px 28px rgba(99,102,241,0.5); }
   .btn-submit:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
-  body.work-mode .btn-submit {
-    background: linear-gradient(135deg, var(--work2), var(--work));
-    box-shadow: 0 4px 20px var(--work-glow);
-  }
-  body.work-mode .btn-submit:hover:not(:disabled) { box-shadow: 0 6px 28px rgba(16,185,129,0.45); }
   .btn-settings {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff; padding: 10px; border-radius: 8px;
@@ -286,25 +214,9 @@
   <button class="btn-settings" onclick="saveSettings()">保存</button>
 </div>
 
-<div class="mode-toggle">
-  <button class="mode-btn active" data-mode="personal" onclick="switchMode('personal')">Personal</button>
-  <button class="mode-btn" data-mode="work" onclick="switchMode('work')">Work</button>
-</div>
-
 <div class="content">
 
-  <!-- Work 専用: Internal/External + タイトル -->
-  <div class="type-toggle work-only">
-    <button class="type-btn active" data-type="internal" onclick="selectType(this)">Internal</button>
-    <button class="type-btn" data-type="external" onclick="selectType(this)">External</button>
-  </div>
-  <div class="field work-only">
-    <div class="field-label">タイトル</div>
-    <input type="text" class="text-input" id="title-input" placeholder="プロジェクト・案件名">
-  </div>
-
-  <!-- 共通本文 -->
-  <textarea id="main-text" rows="7" placeholder="今日の記録を入力（音声入力も使えます）"></textarea>
+  <textarea id="main-text" rows="7" placeholder="今日の記録・メモを入力"></textarea>
 
   <div class="field">
     <div class="field-label">タグ</div>
@@ -321,7 +233,6 @@
     onchange="onFilesSelected(event)">
 
   <div class="buttons">
-    <button class="btn-icon" id="mic-btn" onclick="toggleMic()" title="音声入力">🎤</button>
     <button class="btn-icon" onclick="document.getElementById('file-input').click()" title="ファイル添付">📎</button>
     <button class="btn-submit" id="submit-btn" onclick="submit()">送信</button>
   </div>
@@ -336,8 +247,6 @@ const dateStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.g
 const timeStr = `${pad(today.getHours())}:${pad(today.getMinutes())}`;
 const tsStr   = `${pad(today.getHours())}${pad(today.getMinutes())}${pad(today.getSeconds())}`;
 document.getElementById('dateLabel').textContent = dateStr;
-
-let currentMode = 'personal';
 
 (function() {
   const p = location.search;
@@ -385,30 +294,6 @@ async function fetchAndAppendSnippet(ta, url) {
   ta.value += snippet;
 }
 
-function switchMode(mode) {
-  currentMode = mode;
-  document.body.classList.toggle('work-mode', mode === 'work');
-  document.querySelectorAll('.mode-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.mode === mode);
-  });
-  // プレースホルダ・ボタン文言の差し替え
-  const ta = document.getElementById('main-text');
-  ta.placeholder = mode === 'work'
-    ? '案件・気づき・URLなど自由に入力'
-    : '今日の記録を入力（音声入力も使えます）';
-  document.getElementById('submit-btn').textContent = mode === 'work' ? '保存' : '送信';
-  renderTags();
-}
-
-function selectType(btn) {
-  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-function getSelectedType() {
-  const a = document.querySelector('.type-btn.active');
-  return a ? a.dataset.type : 'internal';
-}
-
 function loadSettings() {
   document.getElementById('inputToken').value = localStorage.getItem('gh_token') || '';
   document.getElementById('inputRepo').value  = localStorage.getItem('gh_repo')  || '';
@@ -431,43 +316,54 @@ function showStatus(msg, type) {
   if (type === 'ok') setTimeout(() => el.style.display = 'none', 2500);
 }
 
-const PERSONAL_TAGS = [
+const BASE_TAGS = [
+  // personal
   { tag: 'personal/triathlon',      label: 'triathlon' },
   { tag: 'personal/book',           label: 'book' },
   { tag: 'personal/dog',            label: 'dog' },
   { tag: 'personal/realestate',     label: 'realestate' },
   { tag: 'personal/reflection',     label: 'reflection' },
-];
-const WORK_TAGS = [
+  // work
   { tag: 'work/mercer',             label: 'mercer' },
   { tag: 'work/bd',                 label: 'bd' },
   { tag: 'work/research',           label: 'research' },
   { tag: 'work/thought_leadership', label: 'thought' },
 ];
 
-function getTagCounts(k)    { return JSON.parse(localStorage.getItem(k) || '{}'); }
-function getCustomTags(k)   { return JSON.parse(localStorage.getItem(k) || '[]'); }
-function saveTagCounts(k,c) { localStorage.setItem(k, JSON.stringify(c)); }
-function saveCustomTags(k,t){ localStorage.setItem(k, JSON.stringify(t)); }
+const CK_COUNTS = 'tag_counts_v2';
+const CK_CUSTOM = 'custom_tags_v2';
 
-function tagKeys() {
-  return currentMode === 'work'
-    ? { base: WORK_TAGS,     count: 'work_tag_counts',  custom: 'work_custom_tags' }
-    : { base: PERSONAL_TAGS, count: 'tag_counts',       custom: 'custom_tags' };
-}
+function getTagCounts()    { return JSON.parse(localStorage.getItem(CK_COUNTS) || '{}'); }
+function getCustomTags()   { return JSON.parse(localStorage.getItem(CK_CUSTOM) || '[]'); }
+function saveTagCounts(c)  { localStorage.setItem(CK_COUNTS, JSON.stringify(c)); }
+function saveCustomTags(t) { localStorage.setItem(CK_CUSTOM, JSON.stringify(t)); }
+
+// 既存の v1 キーから一度だけ移行
+(function migrateLegacyTagState() {
+  if (localStorage.getItem('tag_counts_v2') !== null) return;
+  const merged = {
+    ...JSON.parse(localStorage.getItem('tag_counts')      || '{}'),
+    ...JSON.parse(localStorage.getItem('work_tag_counts') || '{}'),
+  };
+  const customs = [
+    ...JSON.parse(localStorage.getItem('custom_tags')      || '[]'),
+    ...JSON.parse(localStorage.getItem('work_custom_tags') || '[]'),
+  ];
+  saveTagCounts(merged);
+  saveCustomTags(Array.from(new Set(customs)));
+})();
 
 function renderTags() {
-  const { base, count, custom } = tagKeys();
-  const counts   = getTagCounts(count);
-  const customs  = getCustomTags(custom);
-  const all = [...base, ...customs.map(t => ({ tag: t, label: t.split('/').pop() }))];
+  const counts  = getTagCounts();
+  const customs = getCustomTags();
+  const all = [...BASE_TAGS, ...customs.map(t => ({ tag: t, label: t.split('/').pop() }))];
   all.sort((a, b) => (counts[b.tag] || 0) - (counts[a.tag] || 0));
 
   const container = document.getElementById('tag-chips');
   container.innerHTML = '';
   all.forEach(({ tag, label }) => {
     const chip = document.createElement('div');
-    chip.className = 'chip';
+    chip.className = 'chip' + (tag.startsWith('work/') ? ' work-tag' : '');
     chip.dataset.tag = tag;
     chip.textContent = label;
     chip.addEventListener('click', () => chip.classList.toggle('selected'));
@@ -476,13 +372,12 @@ function renderTags() {
 }
 
 function addCustomTag() {
-  const { custom } = tagKeys();
   const input = document.getElementById('tag-input');
   const raw   = input.value.trim().replace(/\s+/g, '_');
   if (!raw) return;
   const tag    = raw.includes('/') ? raw : `custom/${raw}`;
-  const list   = getCustomTags(custom);
-  if (!list.includes(tag)) { list.push(tag); saveCustomTags(custom, list); }
+  const list   = getCustomTags();
+  if (!list.includes(tag)) { list.push(tag); saveCustomTags(list); }
   input.value = '';
   renderTags();
   document.querySelectorAll('#tag-chips .chip').forEach(c => {
@@ -494,33 +389,12 @@ function getSelectedTags() {
   return Array.from(document.querySelectorAll('#tag-chips .chip.selected')).map(c => c.dataset.tag);
 }
 function incrementTagCounts(tags) {
-  const { count } = tagKeys();
-  const counts = getTagCounts(count);
+  const counts = getTagCounts();
   tags.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
-  saveTagCounts(count, counts);
+  saveTagCounts(counts);
 }
 
 renderTags();
-
-let recognition = null;
-function toggleMic() {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    showStatus('このブラウザは音声入力に対応していません', 'err'); return;
-  }
-  const btn = document.getElementById('mic-btn');
-  if (recognition) { recognition.stop(); return; }
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const r = new SR();
-  r.lang = 'ja-JP'; r.continuous = true; r.interimResults = false;
-  r.onstart = () => { btn.classList.add('recording'); btn.textContent = '⏹'; };
-  r.onresult = e => {
-    const t = Array.from(e.results).map(r => r[0].transcript).join('');
-    const ta = document.getElementById('main-text');
-    ta.value = ta.value ? ta.value + '\n' + t : t;
-  };
-  r.onend = () => { btn.classList.remove('recording'); btn.textContent = '🎤'; recognition = null; };
-  recognition = r; r.start();
-}
 
 function compressImage(file, maxBytes) {
   return new Promise(resolve => {
@@ -623,70 +497,54 @@ async function submit() {
     showStatus('⚙️ 設定からTokenとリポジトリを入力してください', 'err'); toggleSettings(); return;
   }
 
-  const btn = document.getElementById('submit-btn');
-  const labelDefault = currentMode === 'work' ? '保存' : '送信';
-  btn.disabled = true; btn.textContent = currentMode === 'work' ? '保存中…' : '送信中…';
-  try {
-    const isWork = currentMode === 'work';
-    const filesFolder = isWork ? 'workmemo/files' : 'inbox/images';
-    const entryFolder = isWork ? 'workmemo' : 'inbox';
+  const tags  = getSelectedTags();
+  // タグに work/* が含まれていれば workmemo へ、それ以外（personal/* / custom/* / 無タグ）は inbox へ
+  const isWork       = tags.some(t => t.startsWith('work/'));
+  const filesFolder  = isWork ? 'workmemo/files' : 'inbox/images';
+  const entryFolder  = isWork ? 'workmemo'        : 'inbox';
 
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = '送信中…';
+  try {
     let fileUrls = [];
     if (pendingFiles.length) {
-      showStatus(isWork ? '📎 ファイルアップロード中…' : '📷 ファイルアップロード中…', 'ok');
+      showStatus('📎 ファイルアップロード中…', 'ok');
       fileUrls = await uploadFiles(token, repo, pendingFiles, filesFolder, tsStr);
     }
-    const tags = getSelectedTags();
 
     let entry;
     if (isWork) {
-      const title    = document.getElementById('title-input').value.trim();
-      const workType = getSelectedType();
-      entry  = `[CLIENT: ${workType}]\n`;
-      if (title)       entry += `[TITLE: ${title}]\n`;
+      // workmemo フォーマット（CLIENT は backend 互換のため internal を既定値で記録）
+      entry  = `[CLIENT: internal]\n`;
       if (tags.length) entry += `[TAGS: ${tags.join(', ')}]\n`;
       entry += `[TIME: ${timeStr}]\n`;
-      if (title)       entry += `${title}\n`;
       entry += `${text}\n`;
-      if (fileUrls.length) {
-        entry += '\n' + fileUrls.map(u => {
-          const isImg = /\.(png|jpe?g|gif|webp|heic)$/i.test(u);
-          return isImg ? `![画像](${u})` : `[FILE: ${u}]`;
-        }).join('\n') + '\n';
-      }
     } else {
-      entry = `[${timeStr}]\n`;
+      entry  = `[${timeStr}]\n`;
       if (tags.length) entry += `[TAGS: ${tags.join(', ')}]\n`;
       entry += `${text}\n`;
-      if (fileUrls.length) {
-        entry += '\n' + fileUrls.map(u => {
-          const isImg = /\.(png|jpe?g|gif|webp|heic)$/i.test(u);
-          return isImg ? `![画像](${u})` : `[FILE: ${u}]`;
-        }).join('\n') + '\n';
-      }
+    }
+    if (fileUrls.length) {
+      entry += '\n' + fileUrls.map(u => {
+        const isImg = /\.(png|jpe?g|gif|webp|heic)$/i.test(u);
+        return isImg ? `![画像](${u})` : `[FILE: ${u}]`;
+      }).join('\n') + '\n';
     }
 
     const message = isWork
-      ? `memo: ${getSelectedType()} ${dateStr} ${timeStr}`
+      ? `memo: ${dateStr} ${timeStr}`
       : `diary: ${dateStr} ${timeStr}`;
     await ghPut(token, repo, `${entryFolder}/${dateStr}_${tsStr}.txt`,
       message, btoa(unescape(encodeURIComponent(entry))));
 
     if (tags.length) incrementTagCounts(tags);
-
-    if (isWork) {
-      const title = document.getElementById('title-input').value.trim();
-      showStatus(`✅ 保存しました（${getSelectedType()}${title ? ' / ' + title : ''}）`, 'ok');
-      document.getElementById('title-input').value = '';
-    } else {
-      showStatus(`✅ 保存しました（${dateStr} ${timeStr}）`, 'ok');
-    }
+    showStatus(`✅ 保存しました（${dateStr} ${timeStr}）`, 'ok');
     document.getElementById('main-text').value = '';
     pendingFiles.length = 0; renderPreviews(); renderTags();
   } catch(e) {
     showStatus(`❌ 送信失敗: ${e.message}`, 'err');
   } finally {
-    btn.disabled = false; btn.textContent = labelDefault;
+    btn.disabled = false; btn.textContent = '送信';
   }
 }
 </script>
