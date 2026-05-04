@@ -7,19 +7,19 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="NeoBrain">
-<meta name="theme-color" content="#080810">
+<meta name="theme-color" content="#ffffff">
 <style>
   :root {
-    --bg:            #080810;
-    --surface:       rgba(255,255,255,0.04);
-    --surface-hover: rgba(255,255,255,0.07);
-    --border:        rgba(255,255,255,0.07);
-    --border-strong: rgba(255,255,255,0.13);
-    --text-primary:  #f1f5f9;
-    --text-secondary:#64748b;
-    --text-muted:    #334155;
+    --bg:            #ffffff;
+    --surface:       rgba(15,23,42,0.04);
+    --surface-hover: rgba(15,23,42,0.07);
+    --border:        rgba(15,23,42,0.08);
+    --border-strong: rgba(15,23,42,0.16);
+    --text-primary:  #0f172a;
+    --text-secondary:#475569;
+    --text-muted:    #94a3b8;
     --accent:        #6366f1;
     --accent2:       #8b5cf6;
     --accent-glow:   rgba(99,102,241,0.35);
@@ -57,7 +57,7 @@
   .header {
     padding: 16px 16px 0;
     position: relative; z-index: 1;
-    background: rgba(255,255,255,0.025);
+    background: rgba(255,255,255,0.7);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(12px);
   }
@@ -79,7 +79,7 @@
   }
   #settingsPanel {
     display: none;
-    background: rgba(255,255,255,0.05);
+    background: rgba(15,23,42,0.04);
     border: 1px solid var(--border-strong);
     border-radius: 12px; padding: 16px;
     margin: 0 16px 12px;
@@ -137,13 +137,13 @@
   .chip:hover { border-color: rgba(99,102,241,0.4); color: var(--text-primary); }
   .chip.selected {
     border-color: rgba(99,102,241,0.6);
-    background: rgba(99,102,241,0.2);
-    color: #a5b4fc; box-shadow: 0 0 10px rgba(99,102,241,0.2);
+    background: rgba(99,102,241,0.12);
+    color: #4338ca; box-shadow: 0 0 10px rgba(99,102,241,0.15);
   }
   .chip.work-tag.selected {
     border-color: rgba(16,185,129,0.6);
-    background: rgba(16,185,129,0.2);
-    color: #6ee7b7; box-shadow: 0 0 10px rgba(16,185,129,0.2);
+    background: rgba(16,185,129,0.12);
+    color: #047857; box-shadow: 0 0 10px rgba(16,185,129,0.15);
   }
   .tag-add-row { display: flex; gap: 6px; margin-top: 6px; }
   .tag-add-row input {
@@ -190,8 +190,8 @@
     box-shadow: 0 4px 16px var(--accent-glow);
   }
   .status { padding: 12px 14px; border-radius: 10px; font-size: 14px; display: none; }
-  .status.ok  { background: rgba(5,150,105,0.12); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
-  .status.err { background: rgba(220,38,38,0.12); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+  .status.ok  { background: rgba(5,150,105,0.10); border: 1px solid rgba(16,185,129,0.35); color: #047857; }
+  .status.err { background: rgba(220,38,38,0.08); border: 1px solid rgba(239,68,68,0.35); color: #b91c1c; }
 </style>
 </head>
 <body>
