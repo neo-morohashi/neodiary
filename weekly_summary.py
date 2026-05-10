@@ -447,6 +447,9 @@ def main():
     else:
         ref = date.today()
 
+    render_only = '--render-html' in args
+    log = (lambda *a, **k: print(*a, **k, file=sys.stderr)) if render_only else print
+
     # --send recipient1@example.com,recipient2@example.com
     recipients = []
     if '--send' in args:
@@ -459,21 +462,21 @@ def main():
     week_str = iso_week_str(sunday)
     week_label = f'{dates[0].strftime("%m/%d")}〜{sunday.strftime("%m/%d")}'
 
-    print(f'週次サマリー生成中: {week_str} ({week_label})')
+    log(f'週次サマリー生成中: {week_str} ({week_label})')
 
     # データ収集
-    print('  日記・plaud 読み込み中...')
+    log('  日記・plaud 読み込み中...')
     diary_days = [read_diary_day(d) for d in dates]
     plaud_days = [read_plaud_day(d) for d in dates]
 
-    print('  バイオメトリクス集計中...')
+    log('  バイオメトリクス集計中...')
     bio = get_weekly_biometrics(dates)
 
-    print('  トレーニングデータ集計中...')
+    log('  トレーニングデータ集計中...')
     training = get_weekly_training(dates)
 
     # Claude 呼び出し
-    print('  Claude にサマリー生成依頼中...')
+    log('  Claude にサマリー生成依頼中...')
     prompt = build_prompt(week_str, dates, diary_days, plaud_days, bio, training)
     summary = call_claude(prompt)
     # Claude が出力した冒頭の # 見出しを除去（save_weekly がヘッダーを付与するため）
@@ -481,26 +484,33 @@ def main():
 
     # 保存
     path = save_weekly(week_str, dates, summary)
-    print(f'  → {path} に保存しました')
+    log(f'  → {path} に保存しました')
+
+    week_label = f'{dates[0].strftime("%m/%d")}〜{dates[-1].strftime("%m/%d")}'
+    subject = f'週次サマリー {week_str}（{week_label}）'
+
+    if render_only:
+        print(f'<!-- SUBJECT: {subject} -->')
+        print(build_email_html(week_str, dates, summary))
+        return
 
     # メール送信
     if recipients:
-        print(f'  メール送信中: {", ".join(recipients)} ...')
+        log(f'  メール送信中: {", ".join(recipients)} ...')
         send_email(recipients, week_str, dates, summary)
 
     # Slack 送信
-    week_label = f'{dates[0].strftime("%m/%d")}〜{dates[-1].strftime("%m/%d")}'
-    print('  Slack 送信中...')
+    log('  Slack 送信中...')
     ok = send_slack_report(
-        title=f'週次サマリー {week_str}（{week_label}）',
+        title=subject,
         html_body=build_email_html(week_str, dates, summary),
         username='NeoBrain',
         emoji=':bar_chart:',
     )
-    print(f'  → Slack {"送信完了" if ok else "送信失敗"}')
+    log(f'  → Slack {"送信完了" if ok else "送信失敗"}')
 
-    print('\n--- 生成されたサマリー ---')
-    print(summary)
+    log('\n--- 生成されたサマリー ---')
+    log(summary)
 
 
 if __name__ == '__main__':
