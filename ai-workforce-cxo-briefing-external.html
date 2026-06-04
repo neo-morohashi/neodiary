@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIが組織・要員体制にもたらす影響 — CXO向け統合ブリーフ</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --ink-muted: #8a8a8a;
+    --rule: #d9d6d0;
+    --rule-soft: #ececea;
+    --paper: #fafaf7;
+    --accent: #1e2a4a;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Hiragino Mincho ProN", "Yu Mincho", "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.75;
+    font-feature-settings: "palt" 1;
+  }
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 80px 28px 120px; }
+
+  /* Masthead */
+  header {
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 28px;
+    margin-bottom: 56px;
+  }
+  .kicker {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-weight: 400;
+    font-size: 34px;
+    line-height: 1.3;
+    margin: 0 0 16px;
+    letter-spacing: -0.01em;
+  }
+  .dek {
+    font-size: 17px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin-bottom: 18px;
+    font-style: italic;
+  }
+  .byline {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 12px;
+    color: var(--ink-muted);
+    letter-spacing: 0.04em;
+  }
+  .byline span + span::before { content: " · "; color: var(--rule); }
+
+  /* TOC */
+  nav.toc {
+    background: transparent;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 0;
+    margin: 40px 0 48px;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+  }
+  nav.toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: toc;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+  }
+  nav.toc li {
+    counter-increment: toc;
+  }
+  nav.toc li::before {
+    content: counter(toc, decimal-leading-zero);
+    color: var(--ink-muted);
+    margin-right: 6px;
+  }
+  nav.toc a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  nav.toc a:hover { border-bottom-color: var(--ink); }
+
+  /* Sections */
+  section { margin: 64px 0 0; }
+  h2 {
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 1.35;
+    margin: 0 0 6px;
+    letter-spacing: -0.005em;
+  }
+  h2 .num {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: var(--ink-muted);
+    display: block;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  h2 + .lede {
+    color: var(--ink-soft);
+    margin: 0 0 24px;
+    font-size: 16px;
+    line-height: 1.65;
+  }
+  h3 {
+    font-weight: 400;
+    font-size: 19px;
+    margin: 36px 0 10px;
+    letter-spacing: -0.005em;
+  }
+  h4 {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin: 28px 0 8px;
+  }
+
+  p { margin: 0 0 16px; }
+
+  /* Lists */
+  ul, ol { padding-left: 22px; margin: 0 0 20px; }
+  li { margin-bottom: 6px; }
+  ul.tight li, ol.tight li { margin-bottom: 2px; }
+
+  /* Quotes */
+  blockquote {
+    margin: 18px 0 18px 0;
+    padding-left: 18px;
+    border-left: 2px solid var(--ink);
+    color: var(--ink-soft);
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.65;
+  }
+  blockquote cite {
+    display: block;
+    margin-top: 6px;
+    font-style: normal;
+    font-size: 13px;
+    color: var(--ink-muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+  }
+  blockquote cite::before { content: "— "; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 28px;
+    font-size: 14px;
+    line-height: 1.55;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+  }
+  thead th {
+    text-align: left;
+    font-weight: 600;
+    padding: 8px 12px 8px 0;
+    border-bottom: 1px solid var(--ink);
+    color: var(--ink);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  tbody td {
+    padding: 9px 12px 9px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: 1px solid var(--rule); }
+  td.num {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* Definition style for company cases */
+  .case { margin: 24px 0; padding-bottom: 22px; border-bottom: 1px solid var(--rule-soft); }
+  .case:last-of-type { border-bottom: none; }
+  .case-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    gap: 16px;
+  }
+  .case-name {
+    font-size: 21px;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+  .case-tag {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+  .case-num {
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin: 0 0 8px;
+  }
+  .case-num strong { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* 4 categories — typographic, not card-y */
+  .types {
+    margin: 16px 0 28px;
+  }
+  .type-item {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .type-item:last-child { border-bottom: 1px solid var(--rule); }
+  .type-head {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .type-head .letter {
+    display: inline-block;
+    width: 22px;
+    font-weight: 600;
+  }
+  .type-head .name {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .type-item .body {
+    margin-left: 22px;
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  .type-item .body em {
+    color: var(--ink);
+    font-style: normal;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+  }
+
+  /* Scenarios — editorial style */
+  .scenario {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .scenario:last-of-type { border-bottom: 1px solid var(--rule); }
+  .scenario > p { font-size: 15px; line-height: 1.7; margin: 0 0 14px; color: var(--ink-soft); }
+  .scenario ol > li {
+    margin-bottom: 14px;
+    padding-left: 4px;
+    line-height: 1.7;
+  }
+  .scenario ol > li > p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    padding-left: 0;
+  }
+  .scenario ol > li strong { color: var(--ink); }
+  .scenario ol > li em {
+    font-style: italic;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  /* Board questions list */
+  section#scenarios > ol > li {
+    margin-bottom: 22px;
+    padding-left: 6px;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+  section#scenarios > ol > li > strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 15.5px;
+  }
+  section#scenarios > ol > li > p {
+    margin: 6px 0 0;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+  section#scenarios > ol > li > p em {
+    font-style: normal;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .scenario .sc-label {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 6px;
+  }
+  .scenario h4 {
+    margin: 0 0 12px;
+    font-family: "Iowan Old Style", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    text-transform: none;
+    letter-spacing: -0.005em;
+    font-weight: 400;
+    color: var(--ink);
+    font-size: 18px;
+  }
+  .scenario .msg {
+    font-style: italic;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    margin-top: 10px;
+  }
+  .scenario .msg .lead {
+    font-style: normal;
+    color: var(--ink-muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* Macro stance — text, not cards */
+  .macro-stances { margin: 16px 0 28px; }
+  .stance-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 140px;
+    gap: 18px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: baseline;
+  }
+  .stance-row:last-child { border-bottom: 1px solid var(--rule); }
+  .stance-row .stance-label {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+  }
+  .stance-row .stance-who { font-size: 16px; }
+  .stance-row .stance-fig {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    font-size: 16px;
+    color: var(--ink);
+  }
+  .stance-row .stance-note {
+    grid-column: 2 / 4;
+    font-size: 13px;
+    color: var(--ink-muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+  }
+
+  /* Pull quote */
+  .pullquote {
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding: 22px 0;
+    margin: 32px 0;
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--ink);
+    font-style: italic;
+  }
+
+  /* Aside */
+  aside {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    border-left: 1px solid var(--ink-muted);
+    padding: 0 0 0 18px;
+    margin: 22px 0;
+  }
+  aside strong { color: var(--ink); font-weight: 600; }
+
+  /* Footer */
+  footer {
+    margin-top: 96px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 12px;
+    color: var(--ink-muted);
+    letter-spacing: 0.04em;
+  }
+  footer a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
+
+  /* Talking points columns */
+  .tp-block { margin-bottom: 22px; }
+  .tp-block { margin-bottom: 36px; }
+  .tp-block h4 { margin-bottom: 10px; }
+  .tp-block ul { padding-left: 18px; margin: 12px 0; }
+  .tp-block li { font-size: 15px; line-height: 1.55; margin-bottom: 4px; }
+  .tp-block p.situation { margin: 0 0 6px; line-height: 1.7; }
+  .tp-block p.implication {
+    margin: 14px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule-soft);
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+  .tp-block p.implication::before {
+    content: "示唆 ── ";
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    font-weight: 600;
+  }
+
+  /* Strong is plain bold, no color */
+  strong { font-weight: 600; color: var(--ink); }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 56px 22px 80px; }
+    h1 { font-size: 28px; }
+    .stance-row { grid-template-columns: 1fr; gap: 4px; }
+    .stance-row .stance-fig { text-align: left; }
+    .stance-row .stance-note { grid-column: 1; }
+    table { font-size: 13px; }
+    .case-head { flex-direction: column; gap: 4px; }
+  }
+
+  @media print {
+    body { background: white; }
+    nav.toc { display: none; }
+    section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header>
+  <div class="kicker">CXO Briefing · 2026年6月</div>
+  <h1>AIが組織・要員体制にもたらす影響</h1>
+  <p class="dek">職種別代替リスク、企業ケース、構えの四類型、日本特殊論点 ── マクロ予測と実証データを統合したクライアント議論用ブリーフ。</p>
+  <p class="byline">
+    <span>マクロレポート12機関</span>
+    <span>企業ケース10社</span>
+    <span>Brynjolfsson / Acemoglu</span>
+  </p>
+</header>
+
+<nav class="toc">
+  <ol>
+    <li><a href="#summary">全体像</a></li>
+    <li><a href="#tp">Talking Points</a></li>
+    <li><a href="#stance">構えの四類型</a></li>
+    <li><a href="#jobs">職種別マップ</a></li>
+    <li><a href="#cases">企業ケース</a></li>
+    <li><a href="#macro">マクロ推計</a></li>
+    <li><a href="#debate">論争の整理</a></li>
+    <li><a href="#japan">日本特殊論点</a></li>
+    <li><a href="#scenarios">議論シナリオ</a></li>
+    <li><a href="#questions">Open Questions</a></li>
+  </ol>
+</nav>
+
+<section id="summary">
+  <h2><span class="num">概要</span>このブリーフが答える4つの問い</h2>
+  <p class="lede">AIで会社の働き方や人の数はどう変わるのか ── 2025–2026年の経営層が最も多く議論しているテーマの一つ。ただし答えがバラバラに見える。本ブリーフは、その混乱を経営判断に使える形に整理することを目的とする。</p>
+
+  <h3>なぜ答えがバラバラに見えるのか</h3>
+  <p>「AIで世界中の3億人分の仕事がなくなる」(Goldman Sachs) と言う機関がある一方、「AIの経済効果はほとんど無視できるほど小さい」(ノーベル賞経済学者Acemoglu) と言う研究者もいる。さらに、Klarnaのように社員を半分に減らした会社がある一方、IBMのように削減宣言の3年後に新卒採用を3倍に増やした会社もある。同じ現象を見ているのに結論が割れているのは、「採用の速さ」「補完投資の規模」「タスク代替のコスト」をどう仮定するかで結論が支配されているから。事実が定まっていないのではなく、<strong>シナリオの組み立て方そのものが論点</strong>になっている。</p>
+
+  <h3>このブリーフが扱う4つの問い</h3>
+  <ol>
+    <li><strong>マクロで何が起きているのか</strong> ── 世界全体・国レベルで雇用や生産性にどんな変化が起きているか。WEFやMcKinseyなどの主要調査機関の数字を並べて、楽観派と懐疑派の差分を明示する。(章05)</li>
+    <li><strong>どんな職種が影響を受けるのか</strong> ── 経理・人事・法務・エンジニア・コンサル・カスタマーサポートなど20種類の職種について、AIに代替されやすい度合いと、その実証データを表にした。(章03)</li>
+    <li><strong>実際の会社はどう動いているのか</strong> ── Klarna、IBM、Shopify、Salesforce、Microsoft、NTTなど10社の実例。「何人削減したか」「CEOがどう発言したか」「その後どうなったか」を時系列で追える。(章04)</li>
+    <li><strong>CXOはどう構えるべきか</strong> ── 上記をふまえて、経営者が取りうる4つの方針 (構えの四類型) と、それぞれの強み・リスクを整理。クライアント議論で即答できるシナリオ集 (章08) も収録。</li>
+  </ol>
+
+  <h3>結論を先取りすると</h3>
+  <p>本ブリーフを通読したときに残るべき4つの認識を、最初に提示しておく。</p>
+  <ul>
+    <li><strong>派手な大量失業ではなく、静かな構造変化が起きている</strong>。AIが原因の雇用減少は「解雇」より「採用しない」という形で進行中。米国ではソフトウェアエンジニアの22〜25歳の雇用が2022年末以降20%減、新規求人は53%減 (Stanford大学)。表面の失業率では捕捉できない、若手の入口が静かに閉まる現象。</li>
+    <li><strong>派手にAI削減を打ち出した会社は軒並み軌道修正している</strong>。Klarnaは社員半減の1.5年後にCEOが「行き過ぎた」と撤退、IBMは7,800削減宣言の3年後に新卒採用を3倍に。短期のコスト削減は実現するが、品質低下・採用ブランド毀損・社内不信が時間遅れで表面化する。</li>
+    <li><strong>大手コンサルの処方箋はもう似通っている</strong>。McKinsey・BCG・Mercer・Deloitteの提言は細部まで収束 ── CEO sponsorship、5レイヤー再設計、トレーニング投資15〜25%、Skills-first。フレーム自体に新規性はなく、勝負は実装の徹底度。「AIが組織のOSになっている」と自己評価できる会社は世界で1%しかない (McKinsey)。</li>
+    <li><strong>日本は米国モデルをそのまま使えない</strong>。人手不足とAI自動化が同時に進むという稀有な経済環境。NTTのように「AIで業務の半分を代替するが、リストラはしない、人手不足を補う」というフレーミングが社会的に通る。米国型の「Reskill or Exit」言語は、政治的・法的に強い制約を受ける。</li>
+  </ul>
+
+  <h3>このブリーフの使い方</h3>
+  <p>CXOクライアントとのミーティングに入る前に章01の「Talking Points」を一読すれば、4領域 (マクロ/職種別/企業ケース/構え) の話せる数字と示唆が手に入る。議論の途中で具体例が必要になったら章04の企業ケース、論争に発展したら章06の「Augmentation vs Replacement論争」、日本クライアント特有の議論には章07、よく出る4パターンへの答え方は章08を参照。各章は独立して読めるよう設計してある。</p>
+</section>
+
+<section id="tp">
+  <h2><span class="num">01</span>CXO議論用 Talking Points</h2>
+  <p class="lede">クライアント・ミーティングで即引用できる、機関別・領域別の数字。引用元は各ソースに紐づく。</p>
+
+  <div class="tp-block">
+    <h4>マクロ</h4>
+    <p class="situation">主要機関の推計が<strong>1桁オーダーで割れている</strong>のが現状の最重要事実。WEFは雇用ネット増加、Goldmanは大規模代替、McKinseyは生産性中庸押し上げ、Acemogluは楽観論を全面的に却下。同じ現象を観測しているにもかかわらず、米国GDP年率インパクトの推計値が+1.5%から+0.06%まで散らばっている ── これは「事実が定まっていない」ことではなく、採用速度・補完投資・タスク代替コストの仮定差が結論を支配しているということ。</p>
+    <ul>
+      <li>WEF: 2030年までにAIで+11M創出/−9M消失、ネット+2M。</li>
+      <li>Goldman Sachs: 全世界300M FTE分が代替可能タスク。米国は労働時間の25%。</li>
+      <li>McKinsey: 経済価値$2.6–4.4T/年、米国生産性+0.5–0.9pt/年。</li>
+      <li>Acemoglu (Nobel): 楽観論は1桁過大、TFP +0.06%/年。</li>
+    </ul>
+    <p class="implication">クライアントとの議論では「どの予測が正しいか」を解こうとせず、楽観/基本/懐疑の<strong>3シナリオを並べる</strong>のが正解。投資の閾値はAcemoglu懐疑シナリオでも回収可能な範囲に設定し、Goldman楽観シナリオのアップサイドはオプション扱いにする。この骨格にしておけば、半年ごとに数字が変わっても意思決定枠組み自体は壊れない。</p>
+  </div>
+
+  <div class="tp-block">
+    <h4>職種別</h4>
+    <p class="situation">理論推計と実証データが<strong>同じ職種を指し始めている</strong>のがこの12ヶ月の地殻変動。Office/Admin・Legal junior・SWE junior・コンサル junior が高曝露というGoldmanの推計を、Anthropic Economic Indexの実利用データとStanford Canariesの観測値が遅れて裏付けた。注目すべきは、影響が「解雇」でなく「<strong>採用しない</strong>」という静かな形で現れていること ── 米国SWE 22–25歳の雇用は20%減、求人ベースでは53%減。表面的な失業率では捕捉できない構造変化が進行している。</p>
+    <ul>
+      <li>Office/Adminタスク代替率46%、Legal 44%、Engineering 37%。</li>
+      <li>SWE Juniorが実証で先行 ── Stanford 22–25歳−20%、求人−53%。</li>
+      <li>AI Mature 1% (McKinsey)、採用72%×価値捕捉30% (BCG)。</li>
+    </ul>
+    <p class="implication">自社の職種ポートフォリオを<strong>曝露マップ</strong>に落とし、影響を受ける母集団のサイズと年齢構成を可視化することが第一歩。特にJunior層 (新卒〜入社3年目) の経済性が根本的に変わる前提で、採用バー・育成プログラム・キャリアパスの3点セットを早期に再設計する必要がある。5年後に「ミドル層に育つはずだった人材プール」が空洞化していることに気づいても手遅れ。</p>
+  </div>
+
+  <div class="tp-block">
+    <h4>企業ケース</h4>
+    <p class="situation">2023〜2024年に派手な削減宣言を打ち出した先進ケースが、<strong>軒並み1.5〜3年で軌道修正</strong>している。KlarnaはCEOが公式に「行き過ぎ」を認めHybridへ後退、IBMは7,800削減宣言から3年後に新卒採用を3倍に反転 (Tripling the Ladder)。一方、最初から「再配置」「リバランス」「Leverage per headcount」と<strong>柔らかい言語</strong>で進めたSalesforce・Microsoft・JPMorganは比較的安定。日本のNTTは「34万人×50%代替」という規模感を出しつつ「リストラはしない」とコミットする独自路線。</p>
+    <ul>
+      <li>Klarna: 40%減 → 1.5年で「行き過ぎ」認める → Hybridへ撤退。</li>
+      <li>IBM: 2023年に7,800削減宣言 → 2026年に新卒採用3倍。</li>
+      <li>Salesforce: 9k→5kだが"rebalance"、内部再配置。</li>
+      <li>Microsoft: 15Kレイオフ+$80B AI投資、ネット横這い。</li>
+      <li>NTT: 34万人×50%代替宣言、ただし「リストラはしない」。</li>
+    </ul>
+    <p class="implication"><strong>当初宣言の政治的コストは予想以上に重い</strong>。短期で派手に削減を打ち出すと、品質バックラッシュ・採用ブランド毀損・株主への撤回コミュニケーションの三重苦が時間遅れで顕現する。経営の評価軸では「短期インパクト最大化」より「中期で漸進・透明・撤退オプション付き」の方が勝ち筋。クライアントにナラティブ設計をROI設計と同等の経営アジェンダとして提示すべき。</p>
+  </div>
+
+  <div class="tp-block">
+    <h4>構え</h4>
+    <p class="situation">大手コンサル4社 (McKinsey・BCG・Mercer・Deloitte) の提言は<strong>細部まで収束している</strong> ── CEO sponsorshipが最大変数、5レイヤー (Workflows/Roles/Skills/Structures/Systems) 同時再設計、Skills-firstへの転換、トレーニング投資15–25%、内部マーケットプレース。フレームワーク自体に新規性はもうほぼない。にもかかわらずMcKinseyの調査では「AI Mature」と自己評価する企業は1%、BCGでは採用72%に対して価値捕捉30% ── <strong>実行が分岐点</strong>。並走してMercerはEmployee Thrivingが2024年66%から2026年44%へ急落と警告。効率化と組織能力毀損が同時に進行中。</p>
+    <ul>
+      <li>McKinsey: CEOがAIを「戦略シフト」と扱えば動く、「IT」扱いなら止まる。</li>
+      <li>BCG: トレーニング投資15–25%がROI分岐点。中央値は5–15%の過小投資。</li>
+      <li>Mercer: Thriving 66%→44% (2024→2026)、効率化と組織能力毀損が並走。</li>
+      <li>Deloitte: 中間管理職求人−40% (2022→2024)、AIに関係なくflatteningは進む。</li>
+    </ul>
+    <p class="implication">フレームワーク提示だけでは差別化にならない時代。実装の3つの差分 ──「①CEOがAIを<strong>IT予算扱いしない</strong>こと、②CHROがリスキリング&組織再設計の主導権を握ること、③Thriving・離職率・品質をROIと<strong>並列のダッシュボード</strong>に置くこと」── をクライアントに突きつけられるかが提案の質を決める。フレームを売るのでなく、フレームの実装診断と修正介入を売る局面。</p>
+  </div>
+
+  <div class="pullquote">
+    「Replacement vs Augmentation」は同じ現象の異なる解釈。実証データに最も整合するのは <em>Reshape &gt; Replace</em> (BCG Henderson) ── ジョブ消滅より再構成が圧倒的に大きい。
+  </div>
+</section>
+
+<section id="stance">
+  <h2><span class="num">02</span>構えの四類型</h2>
+  <p class="lede">CXOクライアントがどの類型を選ぶかが、組織変革の方向性とリスクプロファイルを決める。</p>
+
+  <div class="types">
+
+    <div class="type-item">
+      <div class="type-head"><span class="letter">A.</span><span class="name">Replacement-First</span></div>
+      <div class="body">
+        AIで代替可能なジョブを積極削減、AIファースト採用基準。短期コスト削減とスピードが強み。<br>
+        <em>代表</em> Klarna初期 · Shopify · Accenture<br>
+        <em>リスク</em> 品質バックラッシュ、訓練パイプライン破綻、信頼毀損。
+      </div>
+    </div>
+
+    <div class="type-item">
+      <div class="type-head"><span class="letter">B.</span><span class="name">Augmentation-First</span></div>
+      <div class="body">
+        ヘッドカウント維持、AIでアウトプット倍増、リスキリング集中。信頼維持と長期人材プールが強み。<br>
+        <em>代表</em> IBM 2026 · JPMorgan · Microsoft後期<br>
+        <em>リスク</em> 短期ROIが見えにくい、変化抵抗。
+      </div>
+    </div>
+
+    <div class="type-item">
+      <div class="type-head"><span class="letter">C.</span><span class="name">Hybrid by Design</span></div>
+      <div class="body">
+        代替可能領域は段階削減、コア領域はAIで増幅。両軸を明示言語化。バランスと機動性が強み。<br>
+        <em>代表</em> Salesforce · Goldman Sachs · Klarna後期<br>
+        <em>リスク</em> メッセージの両義性、社員の不安定感。
+      </div>
+    </div>
+
+    <div class="type-item">
+      <div class="type-head"><span class="letter">D.</span><span class="name">Japan Model</span></div>
+      <div class="body">
+        業務代替宣言+リストラなし。解放キャパシティを新規事業・人手不足補完へ。社会的整合性と雇用安定が強み。<br>
+        <em>代表</em> NTT<br>
+        <em>リスク</em> 経済成果の不確実性、本気度醸成の困難。
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="jobs">
+  <h2><span class="num">03</span>職種別代替リスクマップ</h2>
+  <p class="lede">Goldman・OECD・McKinseyの理論推計と、Anthropic Economic Index・Stanford Canariesの実証データを統合。タスク代替率とジョブ置換率は<strong>異なる</strong>。</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>職種カテゴリ</th>
+        <th>タスク代替率</th>
+        <th>短期 (1–2年)</th>
+        <th>5年展望</th>
+        <th>主たる証拠</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>オフィス/アドミ</td><td class="num">46%</td><td>高</td><td>非常に高</td><td>Goldman, OECD, Anthropic</td></tr>
+      <tr><td>法務 (junior)</td><td class="num">44%</td><td>高</td><td>非常に高</td><td>Goldman, A&amp;O/Harvey AI</td></tr>
+      <tr><td>法務 (senior)</td><td class="num">20%</td><td>低</td><td>中</td><td>専門判断・対人責任</td></tr>
+      <tr><td>建築/エンジニアリング</td><td class="num">37%</td><td>中</td><td>高</td><td>Goldman</td></tr>
+      <tr><td>ライフサイエンスR&amp;D</td><td class="num">36%</td><td>中</td><td>高</td><td>Goldman, McKinsey</td></tr>
+      <tr><td>ビジネス/ファイナンス</td><td class="num">35%</td><td>高</td><td>非常に高</td><td>Goldman目論見書95%</td></tr>
+      <tr><td>SWE (junior)</td><td class="num">高</td><td>非常に高</td><td>非常に高</td><td>Stanford −20%、求人−53%</td></tr>
+      <tr><td>SWE (senior)</td><td class="num">中</td><td>低</td><td>中</td><td>アーキ・判断・レビュー</td></tr>
+      <tr><td>顧客サポート</td><td class="num">高</td><td>高</td><td>非常に高</td><td>NBER +14%, Klarna, Salesforce</td></tr>
+      <tr><td>セールス</td><td class="num">中</td><td>中</td><td>高</td><td>営業AI支援</td></tr>
+      <tr><td>マーケティング</td><td class="num">高</td><td>高</td><td>高</td><td>コンテンツ自動生成</td></tr>
+      <tr><td>コンサル (junior)</td><td class="num">高</td><td>高</td><td>非常に高</td><td>Lilli, Sage, ex-McK→AI訓練</td></tr>
+      <tr><td>コンサル (senior partner)</td><td class="num">低</td><td>低</td><td>中</td><td>関係性・判断</td></tr>
+      <tr><td>会計士</td><td class="num">高</td><td>中</td><td>高</td><td>監査・帳簿は自動化</td></tr>
+      <tr><td>中間管理職</td><td class="num">中〜高</td><td>高</td><td>非常に高</td><td>求人−40%, Amazon 14k</td></tr>
+      <tr><td>看護師/ケア</td><td class="num">非常に低</td><td>低</td><td>低</td><td>WEF成長予測</td></tr>
+      <tr><td>教師</td><td class="num">低</td><td>低</td><td>中</td><td>補助的にAI</td></tr>
+      <tr><td>建設/メンテ</td><td class="num">非常に低</td><td>非常に低</td><td>低</td><td>Goldman 6%</td></tr>
+      <tr><td>クリエイティブ (junior)</td><td class="num">高</td><td>高</td><td>非常に高</td><td>Duolingoモデル</td></tr>
+      <tr><td>クリエイティブ (director)</td><td class="num">中</td><td>低</td><td>中</td><td>編集・キュレーション</td></tr>
+    </tbody>
+  </table>
+
+  <aside>
+    <strong>解釈ガイド</strong>「タスク代替率」(その職種のタスクのうち何%がAIで実行可能か) と「ジョブ置換率」(雇用数として何%が実際に消失するか) は別概念。タスク代替率50%でもジョブが消えない可能性がある (リシェイプ)。
+  </aside>
+</section>
+
+<section id="cases">
+  <h2><span class="num">04</span>企業ケーススタディ</h2>
+  <p class="lede">主要10社のAI起因組織変更。CEOナラティブ・実数・撤退/反転パターンを統合。</p>
+
+  <div class="case">
+    <div class="case-head"><span class="case-name">Klarna</span><span class="case-tag">A → C 撤退</span></div>
+    <p class="case-num"><strong>−47%</strong> 従業員数 (5,527→2,907)、賃金+60%</p>
+    <blockquote>AIで40%削減。でも行き過ぎだった。他テックは正直になるべき。<cite>Sebastian Siemiatkowski (2025-10)</cite></blockquote>
+    <p>AI=800FTE分のカスタマーサービス。1.5年後にCEO公式撤回、Hybridモデルへ転換。</p>
+  </div>
+
+  <div class="case">
+    <div class="case-head"><span class="case-name">IBM</span><span class="case-tag">A → B 反転</span></div>
+    <p class="case-num"><strong>3×</strong> entry-level採用 (2026)</p>
+    <blockquote>AIで資源解放、雇用は増える。新卒採用を3倍に。<cite>Arvind Krishna / CHRO (2026-02)</cite></blockquote>
+    <p>2023年に7,800削減宣言 (AskHRがHRタスクの94%自動化) → 2026年にentry-level 3倍 (Tripling the Ladder)。</p>
+  </div>
+
+  <div class="case">
+    <div class="case-head"><span class="case-name">Shopify</span><span class="case-tag">Type A</span></div>
+    <p class="case-num"><strong>"Prove AI Can't Do It"</strong> 新規採用基準 (2025-04)</p>
+    <blockquote>Reflexive AI usage is now a baseline expectation at Shopify.<cite>Tobi Lütke</cite></blockquote>
+    <p>CEO公開メモが業界標準化。Box、Pinterest等が追随。8ヶ月後のコスト評価は今後出てくる。</p>
+  </div>
+
+  <div class="case">
+    <div class="case-head"><span class="case-name">Salesforce</span><span class="case-tag">Type C</span></div>
+    <p class="case-num"><strong>9k→5k</strong> サポート部門 (内部再配置)、コスト−17%</p>
+    <blockquote>I need less heads. でもjobs apocalypseは来ない。<cite>Marc Benioff</cite></blockquote>
+    <p>Agentforceが1M conversation処理。多くをSales/Customer Successに内部移動 ("rebalance")。</p>
+  </div>
+
+  <div class="case">
+    <div class="case-head"><span class="case-name">Accenture</span><span class="case-tag">Type A</span></div>
+    <p class="case-num"><strong>$865M</strong> リストラ+11,000人レイオフ+売上+7%</p>
+    <blockquote>Reskill or Exit. 社員は"Reinventors"にリブランド。<cite>Julie Sweet (2025-09)</cite></blockquote>
+    <p>550Kリスキリング+70K Agentic AI訓練+77K AI専門職員 (40K→77K)。AIコンサル需要がcushion。</p>
+  </div>
+
+  <div class="case">
+    <div class="case-head"><span class="case-name">Microsoft</span><span class="case-tag">Type C</span></div>
+    <p class="case-num"><strong>−15K+$80B</strong> レイオフ+AI投資、ネット横這い</p>
+    <blockquote>Enigma of success. Headcountは同水準、Leverageは急増。<cite>Satya Nadella (2025-07)</cite></blockquote>
+    <p>記録的利益×大規模レイオフ×AI投資の三重を経営者として透明に説明、現代モデル。</p>
+  </div>
+
+  <div class="case">
+    <div class="case-head"><span class="case-name">Duolingo</span><span class="case-tag">Type A</span></div>
+    <p class="case-num"><strong>−10%×2回</strong> コントラクター削減 (2024-01, 2024-10)</p>
+    <p>AIが翻訳・ライティング・エラー検出を担う、人間は品質チェック残す。コンテンツ生成業務のコントラクター段階削減。ユーザー側からの品質バックラッシュ進行。</p>
+  </div>
+
+  <div class="case">
+    <div class="case-head"><span class="case-name">NTT</span><span class="case-tag">D · Japan</span></div>
+    <p class="case-num"><strong>34万人×50%</strong> 5年で業務代替+リストラなし</p>
+    <blockquote>5年後に業務の半分以上をAIが代替する。でも米テックのようなリストラはしない。<cite>島田明 (2025)</cite></blockquote>
+    <p>17万FTE相当のキャパシティ解放を新規事業・人手不足補完へ。日本型モデルの代表。</p>
+  </div>
+
+  <div class="case">
+    <div class="case-head"><span class="case-name">JPMorgan Chase</span><span class="case-tag">Type B</span></div>
+    <p class="case-num"><strong>$18B</strong> 2025技術予算 / 利益+12%×ヘッドカウント+1%</p>
+    <blockquote>AIは特定の役割を代替。影響を受ける社員はリトレーニング。雇用は維持か増やす。<cite>Jamie Dimon</cite></blockquote>
+    <p>LLM Suiteを14万人 (45%) に展開、450+ユースケース。採用減速モデル。</p>
+  </div>
+
+  <div class="case">
+    <div class="case-head"><span class="case-name">Goldman Sachs</span><span class="case-tag">Type C</span></div>
+    <p class="case-num"><strong>95%</strong> IPO目論見書を数分で生成 (従来6人×2週間)</p>
+    <blockquote>Humans and AI coexist. Headcount抑制+一部レイオフ。<cite>David Solomon</cite></blockquote>
+    <p>AIコーディングエージェント数千でスケール、+3倍生産性期待。アソシエイト層への直接影響。</p>
+  </div>
+
+</section>
+
+<section id="macro">
+  <h2><span class="num">05</span>マクロ推計の機関差</h2>
+  <p class="lede">同じ生成AIの経済影響を見ても、機関によって<strong>1桁オーダー</strong>の差。CXO議論では3シナリオで提示するのが正解。</p>
+
+  <div class="macro-stances">
+    <div class="stance-row">
+      <div class="stance-label">楽観</div>
+      <div class="stance-who">Goldman Sachs</div>
+      <div class="stance-fig">+1.5%/年</div>
+      <div class="stance-note">米国GDP上昇、10年で+7%</div>
+    </div>
+    <div class="stance-row">
+      <div class="stance-label">基本</div>
+      <div class="stance-who">McKinsey</div>
+      <div class="stance-fig">+0.5–0.9pt/年</div>
+      <div class="stance-note">米国生産性押し上げ、$2.6–4.4T/年経済価値</div>
+    </div>
+    <div class="stance-row">
+      <div class="stance-label">懐疑</div>
+      <div class="stance-who">Acemoglu (MIT, Nobel)</div>
+      <div class="stance-fig">+0.06%/年</div>
+      <div class="stance-note">TFP押し上げ、GDP+1.1–1.6% (10年累計)</div>
+    </div>
+  </div>
+
+  <h3>機関横断比較</h3>
+  <table>
+    <thead>
+      <tr><th>機関</th><th>主要数字</th><th>時間軸</th><th>アプローチ</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>WEF (2025)</td><td>+78Mネット雇用 / 86%企業変革</td><td>2030</td><td>雇用主サーベイ</td></tr>
+      <tr><td>Goldman Sachs (2023)</td><td>300M FTE / 米25%労働時間</td><td>10年</td><td>タスク代替分析</td></tr>
+      <tr><td>McKinsey (2023→24)</td><td>$2.6–4.4T/年 / 生産性+0.5–0.9pt</td><td>2030</td><td>ユースケース集計</td></tr>
+      <tr><td>OECD (2023→24)</td><td>27%高自動化リスク / 60%失業懸念</td><td>短中期</td><td>国際比較サーベイ</td></tr>
+      <tr><td>BCG (2025)</td><td>72%×30%価値捕捉 / Training 15–25%</td><td>現状</td><td>11カ国10,600人</td></tr>
+      <tr><td>Mercer (2025→26)</td><td>91%企業変革 / Thriving 66→44%</td><td>現状</td><td>16,000人</td></tr>
+      <tr><td>Acemoglu (2024)</td><td>TFP+0.06%/年 / GDP+1.1–1.6%</td><td>10年</td><td>経済学モデル</td></tr>
+      <tr><td>Anthropic Index (2025–26)</td><td>拡張52% vs 自動化45%</td><td>現状実利用</td><td>Claude利用</td></tr>
+      <tr><td>Stanford Canaries (2025-11)</td><td>若手−16% / SWE 22–25歳−20%</td><td>2022以降観測</td><td>労働省データ</td></tr>
+      <tr><td>NBER Brynjolfsson (2023)</td><td>+14%平均 / +34%低スキル</td><td>RCT級</td><td>5,179人</td></tr>
+    </tbody>
+  </table>
+
+  <h3>実装現状の実証データ</h3>
+  <p><strong>Anthropic Economic Index (実利用)</strong> ── 拡張52% &gt; 自動化45%。APIではOffice/Adminタスクが13%に急増。49%の職業がClaudeを使った何らかのタスクをカバー。Computer/Mathが全体の約1/3。</p>
+  <p><strong>Brynjolfsson J-Curve (2026-02)</strong> ── 米国生産性+2.7% (2025)、過去10年平均1.4%の倍。J-curveのHarvest Phase入り判定。同時に若手AI曝露職−16%も観測 (Canaries) ── マクロ勝者とミクロ敗者の同時並走。</p>
+</section>
+
+<section id="debate">
+  <h2><span class="num">06</span>Augmentation vs Replacement 論争</h2>
+  <p class="lede">二項対立は同じ現象の異なる解釈。両派の論者・証拠・実装ケースを横並びに。</p>
+
+  <table>
+    <thead>
+      <tr><th></th><th>Replacement派</th><th>Augmentation派</th><th>Skeptic (Acemoglu)</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>論者</td>
+        <td>Dario Amodei / Siemiatkowski / Lütke / Sweet</td>
+        <td>Brynjolfsson / McKinsey / Hoffman / Krishna / Dimon</td>
+        <td>Daron Acemoglu</td>
+      </tr>
+      <tr>
+        <td>主張</td>
+        <td>AIはジョブを消滅させる、人数を減らせる</td>
+        <td>AIは能力を増幅、人数維持/増、アウトプット倍増</td>
+        <td>マクロ効果は両派とも過大評価</td>
+      </tr>
+      <tr>
+        <td>主要証拠</td>
+        <td>Klarna 800FTE、Salesforce 9k→5k、IBM AskHR 94%、Stanford −16%、Anthropic自動化45%</td>
+        <td>NBER +14%、Anthropic拡張52%、Copilot 55%高速、IBM Tripling、Microsoftネットゼロ、Brynjolfsson J-curve</td>
+        <td>TFP+0.06%/年、METR RCT −19%、72%×30% gap、Klarna撤退</td>
+      </tr>
+      <tr>
+        <td>含意</td>
+        <td>短期削減実現、品質コストは時間遅れ</td>
+        <td>長期人材プール保持、短期ROI不可視</td>
+        <td>過剰投資リスクを織り込む</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>両派が同時に正しい構造</h3>
+  <table>
+    <thead><tr><th>レイヤー</th><th>Replacement派</th><th>Augmentation派</th></tr></thead>
+    <tbody>
+      <tr><td>タスク</td><td>AIがタスクを代替</td><td>AIが人のタスクを補助</td></tr>
+      <tr><td>ジョブ</td><td>ジョブが消滅</td><td>ジョブが再構成</td></tr>
+      <tr><td>企業</td><td>ヘッドカウント削減</td><td>アウトプット増大</td></tr>
+      <tr><td>マクロ</td><td>雇用ネット減</td><td>ネット創出 (WEF+78M)</td></tr>
+    </tbody>
+  </table>
+
+  <aside>
+    <strong>BCG "Reshape &gt; Replace"</strong> ── 代替は限定的、リシェイプが大半。ジョブのタスク構成変更率が代替率を大きく上回る。これが実証データに最も整合する中間ポジション。
+  </aside>
+
+  <aside>
+    <strong>Klarnaサイクルの教訓</strong> ── Replacement → Hybrid撤退まで1.5年。AI Replacement戦略は短期コスト削減を実現するが、品質バックラッシュは時間遅れで顕現する。
+  </aside>
+</section>
+
+<section id="japan">
+  <h2><span class="num">07</span>日本特殊論点</h2>
+  <p class="lede">日本は「AI自動化」と「人手不足」が同時並存する稀有な経済。米国型レイオフモデルが社会的・制度的に困難。</p>
+
+  <h3>構造的特徴</h3>
+  <ul>
+    <li>人口減少 ── 2040年労働人口急減。</li>
+    <li>IT人材不足 ── 2030年に79万人不足 (経産省)。</li>
+    <li>AI/ロボット人材 ── 2040年に326万人不足 (経産省)。</li>
+    <li>雇用流動性制約 ── 解雇規制、終身雇用慣行。</li>
+    <li>ホワイトカラー比率高 ── Goldmanで米国・スウェーデンと並ぶ高リスク国。</li>
+    <li>社内対話実施率 ── 32%のみ (JILPT)。</li>
+  </ul>
+
+  <h3>NTTモデル (代表ケース)</h3>
+  <ul>
+    <li>34万人×50%の業務を5年でAI代替。</li>
+    <li>「米テック大手のようなリストラはしない」</li>
+    <li>17万FTE相当のキャパシティを新規事業・人手不足補完へ。</li>
+    <li>自然減+リスキリング+内部移動。</li>
+    <li>NTTデータ ── 生成AIでシステム丸ごと開発、IT人材不足の抜本策。</li>
+  </ul>
+
+  <h3>米国型 vs 日本型</h3>
+  <table>
+    <thead><tr><th>観点</th><th>米国型</th><th>日本型</th></tr></thead>
+    <tbody>
+      <tr><td>AI ROI実現</td><td>レイオフ+採用減速</td><td>自然減+内部移動+人手不足補完</td></tr>
+      <tr><td>メッセージ</td><td>"Less heads" "Reskill or Exit"</td><td>"リストラはしない" "人手不足を補う"</td></tr>
+      <tr><td>時間軸</td><td>1–2年で実装</td><td>5–10年で段階的</td></tr>
+      <tr><td>政治的コスト</td><td>中高 (株主向け正当化)</td><td>高 (社会的合意必要)</td></tr>
+      <tr><td>経済成果</td><td>短期EPS改善</td><td>中長期生産性</td></tr>
+    </tbody>
+  </table>
+
+  <aside>
+    <strong>日本企業CXOの構え</strong> ── NTT型 (代替宣言×リストラなし) / 段階的人員減 (自然減ベース) / 内部移動+リスキリング集中。いずれも「AIで人手不足補完」フレーミングが社会的に通る。「リストラ」言語化は政治的・法的リスク。
+  </aside>
+</section>
+
+<section id="scenarios">
+  <h2><span class="num">08</span>議論シナリオ A–D</h2>
+  <p class="lede">CXOミーティング中によく出る4パターンに対する、即引用可能な答え方。各シナリオで挙げる論点は単なる事例名ではなく、それぞれが何を意味し、議論をどこに着地させるためのものかを併せて記載しています。</p>
+
+  <div class="scenario">
+    <div class="sc-label">Scenario A</div>
+    <h4>クライアント「AIで人を減らしたい」</h4>
+    <p>削減の意思決定そのものを止めるのではなく、「いつ・どのコストが顕現するか」の時間軸を経営者の頭の中に入れることが目的。短期 ROI の試算には含まれない3つの隠れコストを順に提示します。</p>
+    <ol>
+      <li><strong>Klarna サイクル (1.5年で撤退)</strong> ── 2024年2月に「AI が 800FTE 分のカスタマーサービスを代替した」と派手に発表した Klarna は、2025年9月に CEO 自身が「行き過ぎた、サービス品質に明確な悪影響があった」と公式撤退。<em>削減実行から品質バックラッシュ顕在化までのタイムラグはおよそ1.5年</em> ── 短期 ROI 報告では捕捉できない時期に必ず火がつきます。</li>
+      <li><strong>IBM Tripling (3年で逆転)</strong> ── 2023年に「バックオフィス7,800人を5年で AI で代替する」と宣言した IBM は、2026年に新卒採用を3倍に拡大。<em>当初宣言から3年で方向性そのものが逆転</em>しました。派手な削減コミットメントは、株主・社員・採用市場への撤回コミュニケーションコストを後から請求してきます。</li>
+      <li><strong>品質バックラッシュの時間遅れ</strong> ── Klarna も Duolingo も、AI 代替直後でなく半年〜1.5年後にユーザー・顧客側からの品質低下指摘が顕在化しました。<em>四半期 ROI の数字には決して載らない遅効性のコスト</em>で、ブランド毀損と離脱で表面化したときには既に着手しないと間に合いません。</li>
+      <li><strong>エントリパイプライン破綻 (Stanford Canaries)</strong> ── 米国ソフトウェアエンジニアの22〜25歳の雇用は2022年末以降20%減、求人は53%減。<em>Junior層を「採用しない」形で削ると、5年後にミドル層人材プールが空洞化</em>します。この構造リスクは既に観測値として顕在化しています。</li>
+    </ol>
+    <p class="msg"><span class="lead">Talking Point</span>短期コスト削減は実現できます。ただし KlarnaもIBMも当初宣言を1.5〜3年で撤回しています。ROI 試算には、6ヶ月〜1.5年後に発火する品質コスト、5年後のミドル層空洞化、そして撤回時のコミュニケーションコスト ── この3つの隠れコストを必ず加算してください。「削減するか否か」より「どの速度・どの透明性で進めるか」が経営判断の本丸です。</p>
+  </div>
+
+  <div class="scenario">
+    <div class="sc-label">Scenario B</div>
+    <h4>クライアント「リスキリングをどう設計すべきか」</h4>
+    <p>多くの企業がリスキリング予算は確保しているのに ROI が出ない、という根本原因を整理することが目的。問題は規模ではなく構造です。4つの論点で「設計が間違っている可能性」を示します。</p>
+    <ol>
+      <li><strong>Mercer "Skills-First Architecture"</strong> ── Mercer Global Talent Trends の中核提言で、<em>ジョブベースからスキルベースへの組織転換</em>がリスキリング ROI の前提条件。スキル分類・内部マーケットプレース・報酬体系の3点セットで再設計しないと、研修だけ実施しても配置転換が起きずに投資が回収できません。</li>
+      <li><strong>BCG 4 imperatives と Training 15–25%投資水準</strong> ── BCG AI at Work 2025 が ROI 出現企業を分析した結論で、<em>AI 投資の15〜25%をトレーニングに振り向けているのが ROI 分岐点</em>。中央値企業は5〜15%の過小投資で止まっています。「予算が足りない」のでなく「トレーニング比率が低い」のが実態です。</li>
+      <li><strong>Accenture 550K リスキル + 70K Agentic AI</strong> ── 11,000人レイオフと並走して55万人を AI ファンダメンタルにリスキル、さらに7万人を Agentic AI 専門訓練に。<em>リスキリングは「全員一律」ではなく、コア層・専門層・退出層で設計を分ける</em>必要があることを実例として示しています。</li>
+      <li><strong>IBM HR 内部移動先進事例</strong> ── AskHR で HR タスクの94%を自動化したうえで、HR メンバーを高付加価値の役割に再配置。<em>リスキリングは「研修受講」ではなく「実際の配置転換」までを含めて初めて投資が回収できる</em>ことの参照ケースです。</li>
+    </ol>
+    <p class="msg"><span class="lead">Talking Point</span>リスキリング予算は AI 投資の15〜25%が ROI 分岐点 ── ここは規模の議論です。ただし規模だけでは効きません。OECDが32%の企業しか実施していないと指摘する社員参画と、内部マーケットプレース (タレントマッチング) の構築の2点が「研修したけど配置転換が起きない」状態を抜け出すための中核設計です。Mercer の Skills-First Architecture を骨格に置きながら、Accenture と IBM の階層別実装を参照点にする提案が現実的です。</p>
+  </div>
+
+  <div class="scenario">
+    <div class="sc-label">Scenario C</div>
+    <h4>クライアント「日本でも米国と同じことをすべきか」</h4>
+    <p>米国型のレイオフモデルが日本ではそのまま使えない構造的理由と、独自路線が成立する根拠を提示することが目的。「日本だから何もできない」ではなく、「日本だからこの設計が機能する」という方向に話を持っていきます。</p>
+    <ol>
+      <li><strong>NTT モデル (代替宣言×リストラなし)</strong> ── 島田明社長の「5年後に34万人の業務の半分以上を AI が代替する。ただし米テック大手のようなリストラはしない」発言は、<em>AI 効率化と雇用維持を両立させる日本企業独自の解の代表例</em>。17万 FTE 相当のキャパシティを新規事業・人手不足補完に振り向ける構造で、社会的合意も取りやすい。</li>
+      <li><strong>経産省 人手不足79万/326万人</strong> ── 2030年に IT 人材79万人、2040年に AI/ロボット人材326万人が不足する試算。<em>日本では「AI で削減」より「AI で人手不足を補う」フレーミングの方が経済実態に整合</em>します。米国型「AI で生産性向上 → 人員削減」とは経済構造そのものが異なります。</li>
+      <li><strong>JILPT 社内対話32%</strong> ── 職場で AI を導入する際に労働者と話し合いを実施している日本企業は32%にとどまる、という労働政策研究機構の調査結果。<em>「対話なき AI 導入」が信頼資本を毀損し、後の本格展開を阻害するリスクのシグナル</em>。残り68%のリスクを定量化することが提案の入口になります。</li>
+      <li><strong>米国型レイオフの社会的・法的制約</strong> ── 整理解雇の4要件、終身雇用慣行、メディア・労組・株主の反応 ── 米国型「Reskill or Exit」をそのまま輸入すると、政治的・法的なコストが ROI を上回ります。<em>「やらない」ではなく「日本の制度内でどう同じ生産性を出すか」が経営の設計課題</em>です。</li>
+    </ol>
+    <p class="msg"><span class="lead">Talking Point</span>日本は「AI 自動化」と「人手不足」が同時並走する世界でも稀有な経済環境です。米国モデルをそのまま輸入すると、政治的・法的コストが ROI を吹き飛ばします。NTT のように「AI で業務代替するが、リストラはしない、人手不足を補う」というフレーミングが社会的に通り、5〜10年の段階移行が現実的なタイムフレームです。「日本だから遅れる」のでなく「日本だからこの設計でなければ動かない」と位置づけ直すのが提案の骨格になります。</p>
+  </div>
+
+  <div class="scenario">
+    <div class="sc-label">Scenario D</div>
+    <h4>クライアント「AI投資のROIが見えない」</h4>
+    <p>「効果が出ない=投資判断が間違っていた」ではなく、「効果が出るタイミングと、効果を出すための実装条件」を切り分けて経営に提示することが目的。4つの論点で時期と条件の両軸を整理します。</p>
+    <ol>
+      <li><strong>Brynjolfsson J-curve (2025年harvest phase入り)</strong> ── Stanford の Brynjolfsson が提唱する J-curve 理論では、<em>汎用技術 (GPT) は補完投資の期間中は生産性が見えず、補完投資完了後に指数的に効果が出る</em>。米国生産性は2025年に+2.7%と過去10年平均1.4%の倍に到達し、Harvest Phase 入りと判定されています。「まだ効果が見えないだけ」というシナリオを経営に提示する根拠になります。</li>
+      <li><strong>McKinsey "Mature 1%"</strong> ── AI が業務 OS に統合された「Mature」段階と自己評価する企業は世界で1%のみ。<em>残り99%は「効果が出る前」の位置にいる</em>。ROI が見えないのは多数派の自然状態であって、自社固有の失敗ではないことを示すデータです。</li>
+      <li><strong>BCG "72%×30% value capture gap"</strong> ── ワーカーの72%が AI を定期使用しているのに、企業として価値捕捉できているのは30%のみ。<em>ツール導入率と価値創出率の乖離42pt</em>が現状の標準的なギャップで、これを埋める設計が経営判断の本丸であることを定量で示せます。</li>
+      <li><strong>5レイヤー再設計の徹底</strong> ── McKinsey Superagency の枠組みで、Workflows / Roles / Skills / Structures / Systems の5層を同時に再設計しないと ROI が出ない。<em>「ツール導入だけ」「ワークフローだけ」のローカル最適は J-curve の谷を抜けられない</em>。ROI ギャップの直接原因は実装の徹底度です。</li>
+    </ol>
+    <p class="msg"><span class="lead">Talking Point</span>AI 投資の ROI は J-curve で2〜3年遅れます。Brynjolfsson は2025年に Harvest Phase 入りと判定しています。価値捕捉できているのは30%、その差は「ツール導入」と「5レイヤー再設計」の徹底度の差です。「ROI が出ない=投資が間違い」ではなく「実装が浅い」が現実。Mature 段階の1%に入れば差別化要因になり、競合の追随を5年単位で引き離せます。</p>
+  </div>
+
+  <h3>取締役会向け設問</h3>
+  <p>以下の8問は、AI×組織変革のガバナンスを取締役会レベルで監督するための診断質問です。各設問には「なぜこの問いか (理由)」と「どう答えが返るべきか (シグナル)」を添えました。CHRO・CEO に問う想定で順に並べています。</p>
+
+  <ol>
+    <li>
+      <strong>我が社の AI 戦略は CEO sponsored か。</strong>
+      <p><em>理由</em> ── McKinsey Superagency の最大の発見は「CEO が AI を戦略シフトと扱うか、IT アップグレードと扱うかで組織の動きが決定的に分かれる」こと。スポンサーシップの所在こそ ROI の最大変数です。<br>
+      <em>良い答え</em> ── CEO 自らが四半期に複数回、AI 戦略を経営会議の主要議題にしている。<em>悪い答え</em> ── CIO/CTO 預かりで CEO は予算承認のみ関与。後者なら最優先で介入が必要なシグナルです。</p>
+    </li>
+    <li>
+      <strong>5レイヤー (Workflows / Roles / Skills / Structures / Systems) のうち、どこに投資しているか。</strong>
+      <p><em>理由</em> ── McKinsey の調査で「Mature」企業の特徴は5レイヤー同時着手。1〜2レイヤーだけだとローカル最適に終わり、J-curve の谷を抜けられない。<br>
+      <em>良い答え</em> ── 5レイヤーすべてに投資配分の説明ができる。<em>悪い答え</em> ── 「ワークフロー (ツール) 中心」「Skills 中心」など偏った投資。残るレイヤーの投資設計が次の提案機会です。</p>
+    </li>
+    <li>
+      <strong>トレーニング予算は AI 投資の15〜25%か (BCG benchmark)。</strong>
+      <p><em>理由</em> ── BCG の ROI 出現企業分析でこの比率が分岐点。中央値企業は5〜15%にとどまり、ROI ギャップの直接原因。<br>
+      <em>良い答え</em> ── 15〜25%、かつ階層別 (コア/専門/退出) に予算配分の論理がある。<em>悪い答え</em> ── 「全社一律のリスキリング予算」または5〜10%。これは構造的にリターン不足になる設計です。</p>
+    </li>
+    <li>
+      <strong>エンプロイ Thriving はどう変化しているか (Mercer benchmark 66%→44%)。</strong>
+      <p><em>理由</em> ── Mercer の観測で、AI 効率化を進めている企業ほど従業員の Thriving 急落が並走している。これを ROI と並列でモニタしていないと「効率化はできたが組織が壊れた」事態に気づかない。<br>
+      <em>良い答え</em> ── 四半期で計測、低下傾向にあれば介入トリガーがある。<em>悪い答え</em> ── 年次サーベイのみ、または Thriving を経営ダッシュボードに載せていない。これは組織能力毀損の早期警戒が機能していないシグナルです。</p>
+    </li>
+    <li>
+      <strong>品質バックラッシュをモニタする仕組みは。</strong>
+      <p><em>理由</em> ── Klarna・Duolingo のケースが示すように、AI 代替の品質劣化は半年〜1.5年遅れで顕在化する。短期 ROI には載らないが、後でブランド毀損として請求書が来る。<br>
+      <em>良い答え</em> ── 顧客満足・苦情率・離脱率・NPS 等を AI 代替領域別に追跡している。<em>悪い答え</em> ── 顧客満足を全社一括でしか見ていない、AI 代替領域とそれ以外を分離していない。</p>
+    </li>
+    <li>
+      <strong>若手エントリーレベルの育成パイプラインは保持されているか。</strong>
+      <p><em>理由</em> ── Stanford Canaries の観測で、AI 曝露職の22〜25歳雇用は20%減、求人は53%減。今 Junior 採用を絞ると5年後にミドル層人材プールが空洞化する。<br>
+      <em>良い答え</em> ── 5年後のミドル層充足計算をしたうえで Junior 採用枠を維持・育成プログラムを再設計している。<em>悪い答え</em> ── 「AI で Junior 業務がなくなるので採用を絞っている」。これは5年後の経営課題を確定させる行動です。</p>
+    </li>
+    <li>
+      <strong>AI Governance は HR / Legal / Risk と統合されているか。</strong>
+      <p><em>理由</em> ── AI を採用・評価・パフォーマンス管理に使う場合、HR 単独では倫理・法務・リスクの統合判断ができない。OECD の調査で社内対話を実施している企業は32%のみで、ガバナンス設計の不十分さがすでに観測されている。<br>
+      <em>良い答え</em> ── HR×Legal×Risk×IT の合同フォーラムがあり、AI 利用ポリシーと影響評価が運用中。<em>悪い答え</em> ── HR が AI ベンダーと個別契約、ガバナンスは事後対応。これは将来の制裁リスクと従業員信頼毀損の両方を抱える設計です。</p>
+    </li>
+    <li>
+      <strong>競合の動きはどの類型 (A/B/C/D) に分類されるか。</strong>
+      <p><em>理由</em> ── 自社の構えを選ぶうえで、競合のポジショニングを把握していないと「気づいたら同じ類型に集中していた」という戦略的失敗を起こす。<br>
+      <em>良い答え</em> ── 主要競合5社程度の AI 起因組織変更を継続トラッキングし、自社の差別化ポジションを意識的に選んでいる。<em>悪い答え</em> ── 競合動向を断片的にしか把握していない、または「みんなと同じことをしている」状態。後者は逆張りの優位を逃しているシグナルです。</p>
+    </li>
+  </ol>
+</section>
+
+<section id="questions">
+  <h2><span class="num">09</span>Open Questions</h2>
+  <ul>
+    <li>若手雇用減少がシニア人材プール破綻に何年でつながるか。</li>
+    <li>Acemoglu vs 楽観派、決定的データはいつ出るか。</li>
+    <li>J-curve Harvest Phaseの持続性 ── 一時的な押し上げか持続的か。</li>
+    <li>日本のマクロ生産性インパクトの独自推計。</li>
+    <li>Anthropic Economic Indexで「Office/Admin 13%」がどこまで伸びるか。</li>
+    <li>AI Governanceの業界標準形成のタイミング。</li>
+    <li>クリエイティブ判断 ── AIが補助でなく主導になる転換点。</li>
+  </ul>
+</section>
+
+<section id="sources">
+  <h2><span class="num">10</span>ソース・出典</h2>
+  <table>
+    <thead><tr><th>ソース</th><th>著者 / 機関</th><th>年</th><th>主要数字</th></tr></thead>
+    <tbody>
+      <tr><td>Future of Jobs Report 2025</td><td>WEF</td><td>2025-01</td><td>+78Mネット、86%企業変革</td></tr>
+      <tr><td>Generative AI Could Replace 300M Jobs</td><td>Goldman Sachs</td><td>2023-03</td><td>300M FTE、米25%</td></tr>
+      <tr><td>Economic Potential of Generative AI</td><td>McKinsey MGI</td><td>2023-06</td><td>$2.6–4.4T/年</td></tr>
+      <tr><td>Superagency in the Workplace</td><td>McKinsey</td><td>2025-01</td><td>Mature 1%、5レイヤー</td></tr>
+      <tr><td>Employment Outlook + AI</td><td>OECD</td><td>2023–25</td><td>27%高自動化リスク</td></tr>
+      <tr><td>AI at Work 2025</td><td>BCG</td><td>2025-06</td><td>72%×30%価値</td></tr>
+      <tr><td>Global Talent Trends 2025/2026</td><td>Mercer</td><td>2025–26</td><td>Thriving 66→44%</td></tr>
+      <tr><td>Reinventing Workforce Planning</td><td>Deloitte</td><td>2025</td><td>中間管理職求人−40%</td></tr>
+      <tr><td>Anthropic Economic Index</td><td>Anthropic</td><td>2025–26</td><td>拡張52% vs 自動化45%</td></tr>
+      <tr><td>Generative AI at Work (WP31161)</td><td>Brynjolfsson, Li, Raymond / NBER</td><td>2023-04</td><td>+14%、+34%低スキル</td></tr>
+      <tr><td>Simple Macroeconomics of AI</td><td>Acemoglu / MIT</td><td>2024-04</td><td>TFP+0.06%/年</td></tr>
+      <tr><td>Canaries in the Coal Mine</td><td>Brynjolfsson et al. / Stanford</td><td>2025-11</td><td>若手−16%、SWE−20%</td></tr>
+    </tbody>
+  </table>
+</section>
+
+
+<footer>
+  AI が組織・要員体制にもたらす影響 · CXO 向け統合ブリーフ · 2026年6月 · <a href="#tp">先頭へ戻る</a>
+</footer>
+
+</div>
+
+</body>
+</html>
