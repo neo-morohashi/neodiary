@@ -269,24 +269,31 @@ def update_diary_biometrics(date_str: str, block: str):
     if not block:
         return
     diary_path = DIARY_DIR / f'{date_str}.md'
-    ensure_diary(date_str)
 
-    content = diary_path.read_text(encoding='utf-8')
-    header  = '## 💤 バイオメトリクス'
+    # 日記は ~/Documents/NeoBrain 配下 = macOS TCC 保護下。launchd から実行する
+    # python に Full Disk Access が無いと PermissionError になる。DB 保存は既に
+    # 完了しているのでダッシュボードには影響させず、書き戻しのみ警告して握りつぶす。
+    try:
+        ensure_diary(date_str)
+        content = diary_path.read_text(encoding='utf-8')
+        header  = '## 💤 バイオメトリクス'
 
-    if header in content:
-        # 既存セクションを置換
-        start = content.find(header)
-        next_sec = content.find('\n## ', start + len(header))
-        if next_sec < 0:
-            content = content[:start].rstrip() + '\n\n' + block + '\n'
+        if header in content:
+            # 既存セクションを置換
+            start = content.find(header)
+            next_sec = content.find('\n## ', start + len(header))
+            if next_sec < 0:
+                content = content[:start].rstrip() + '\n\n' + block + '\n'
+            else:
+                content = content[:start] + block + content[next_sec:]
         else:
-            content = content[:start] + block + content[next_sec:]
-    else:
-        content = content.rstrip() + '\n\n' + block + '\n'
+            content = content.rstrip() + '\n\n' + block + '\n'
 
-    diary_path.write_text(content, encoding='utf-8')
-    print(f'  → {diary_path} にバイオメトリクスを書き込みました')
+        diary_path.write_text(content, encoding='utf-8')
+        print(f'  → {diary_path} にバイオメトリクスを書き込みました')
+    except PermissionError as e:
+        print(f'  ⚠ 日記への書き戻しをスキップ（DB保存は成功済み）: {e}')
+        print('    → 実行 python に Full Disk Access を付与すると書き戻しも有効化されます。')
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
