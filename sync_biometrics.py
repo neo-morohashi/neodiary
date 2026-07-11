@@ -155,6 +155,12 @@ def get_whoop_access_token() -> str:
 
 
 def fetch_whoop(date_str: str) -> dict:
+    # 機械固有の無効化スイッチ。.no_whoop マーカーがある機では WHOOP を一切叩かない
+    # （WHOOP の refresh_token はローテート＆.env書き戻しのため、複数機で同時に走ると
+    #  互いのトークンを無効化し合って破損する。移行期は1機のみで回すための安全装置）。
+    if (Path(__file__).parent / '.no_whoop').exists():
+        print('  [WHOOP] .no_whoop マーカー検出 — この機では WHOOP 無効（二重ローテート防止）。スキップ。')
+        return {}
     if not (WHOOP_CLIENT_ID and WHOOP_CLIENT_SECRET and (WHOOP_REFRESH_TOKEN or WHOOP_ACCESS_TOKEN)):
         print('  [WHOOP] 認証情報未設定。スキップ。')
         return {}
