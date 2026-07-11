@@ -23,7 +23,6 @@ import smtplib
 import sqlite3
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
 from pathlib import Path
 from datetime import date, timedelta
 
@@ -234,7 +233,7 @@ def table_rows(pairs: list[tuple]) -> str:
 
 
 def build_html(target: date, bio: dict, fitness: dict,
-               training: list[dict], summary: str, images: list[Path]) -> str:
+               training: list[dict], summary: str) -> str:
 
     day_ja = ['月', '火', '水', '木', '金', '土', '日'][target.weekday()]
 
@@ -295,19 +294,6 @@ def build_html(target: date, bio: dict, fitness: dict,
             f'</div>'
         )
 
-    # 写真（CIDで埋め込み）
-    photos_html = ''
-    if images:
-        imgs = ''.join(
-            f'<img src="cid:img{i}" style="width:160px;height:120px;object-fit:cover;'
-            f'border-radius:6px;margin:4px;" alt="photo">'
-            for i in range(len(images[:6]))
-        )
-        photos_html = (
-            f'<div style="margin-bottom:20px;"><div class="sec-label">📷 写真</div>'
-            f'<div style="display:flex;flex-wrap:wrap;gap:4px;">{imgs}</div></div>'
-        )
-
     return f"""<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8">
@@ -325,7 +311,6 @@ def build_html(target: date, bio: dict, fitness: dict,
   {bio_html}
   {fit_html}
   {train_html}
-  {photos_html}
   <hr style="border:none;border-top:1px solid #eee;margin:20px 0 12px;">
   <p style="color:#ccc;font-size:11px;margin:0;">NeoBrain 日次ダイジェスト</p>
 </body>
@@ -334,7 +319,7 @@ def build_html(target: date, bio: dict, fitness: dict,
 
 # ── メール送信 ────────────────────────────────────────────────────────────────
 
-def send_email(recipients: list[str], subject: str, html: str, images: list[Path]) -> None:
+def send_email(recipients: list[str], subject: str, html: str) -> None:
     gmail_user = os.environ.get('GMAIL_USER', '')
     gmail_pass = os.environ.get('GMAIL_APP_PASSWORD', '')
     if not gmail_user or not gmail_pass:
@@ -350,15 +335,6 @@ def send_email(recipients: list[str], subject: str, html: str, images: list[Path
     msg_alt = MIMEMultipart('alternative')
     msg_alt.attach(MIMEText(html, 'html', 'utf-8'))
     msg_root.attach(msg_alt)
-
-    for i, img_path in enumerate(images[:6]):
-        try:
-            mime_img = MIMEImage(img_path.read_bytes())
-            mime_img.add_header('Content-ID', f'<img{i}>')
-            mime_img.add_header('Content-Disposition', 'inline', filename=img_path.name)
-            msg_root.attach(mime_img)
-        except Exception:
-            pass
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
         server.login(gmail_user, gmail_pass)
@@ -395,11 +371,11 @@ def main():
     print('  Claudeにサマリー生成依頼中...')
     summary = generate_summary(target, diary, plaud, images)
 
-    html    = build_html(target, bio, fitness, training, summary, images)
+    html    = build_html(target, bio, fitness, training, summary)
     subject = f'[NeoBrain] {target.strftime("%m/%d")}（{day_ja}）のダイジェスト'
 
     if recipients:
-        send_email(recipients, subject, html, images)
+        send_email(recipients, subject, html)
     else:
         print('  --send 未指定のためメール送信スキップ')
 
