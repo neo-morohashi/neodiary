@@ -13,14 +13,19 @@ import webbrowser
 import urllib.parse
 import requests
 from pathlib import Path
+from dotenv import load_dotenv
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 REDIRECT_URI = 'http://localhost:8888/callback'
 SCOPES       = 'offline read:recovery read:cycles read:sleep read:workout read:profile'
 ENV_PATH     = Path(__file__).parent / '.env'
 
-client_id     = input('WHOOP Client ID: ').strip()
-client_secret = input('WHOOP Client Secret: ').strip()
+# Client ID/Secret は初回登録時に .env へ保存済み。毎回貼り直させず再利用し、
+# 無いときだけ聞く（再認証は refresh_token 失効のたびに走るので摩擦を減らす）。
+load_dotenv(ENV_PATH)
+client_id     = os.environ.get('WHOOP_CLIENT_ID', '') or input('WHOOP Client ID: ').strip()
+client_secret = os.environ.get('WHOOP_CLIENT_SECRET', '') or input('WHOOP Client Secret: ').strip()
+print(f'Client ID: {client_id[:8]}…（.env から読み込み）' if os.environ.get('WHOOP_CLIENT_ID') else '')
 state         = os.urandom(16).hex()
 
 auth_url = (
@@ -31,7 +36,10 @@ auth_url = (
     f'&scope={urllib.parse.quote(SCOPES)}'
     f'&state={state}'
 )
-print(f'\nブラウザを開きます: {auth_url}\n')
+print(f'\nRedirect URI: {REDIRECT_URI}')
+print('  ↑ この値が developer.whoop.com のアプリ設定と一致していないと'
+      ' invalid_request で落ちます。\n')
+print(f'ブラウザを開きます: {auth_url}\n')
 webbrowser.open(auth_url)
 
 
