@@ -21,15 +21,20 @@ WHOOP/Fitbit で必要だった .env 書き戻しと多重実行の防止が要�
      - アプリケーションの種類: **ウェブ アプリケーション**
      - 承認済みのリダイレクト URI: http://localhost:8889/callback
        （--manual で実行する場合は https://www.google.com を登録する）
-  5. Client ID と Client Secret を控える
+  5. 作成直後の画面で **「JSON をダウンロード」** を押す
+     client_secret は作成直後にしか表示されない（2025年6月以降マスクされる）。
+     閉じてしまったら復旧できないのでクライアントを作り直すこと。
 
 実行方法:
   .venv/bin/python3 google_health_auth.py
+      → .env → ~/Downloads/client_secret*.json → 手入力 の順に認証情報を探す
+  .venv/bin/python3 google_health_auth.py --json ~/Downloads/client_secret_xxx.json
   .venv/bin/python3 google_health_auth.py --manual   # localhost が使えない場合
 """
 import os
 import re
 import sys
+import json
 import secrets
 import datetime as dt
 import webbrowser
@@ -57,9 +62,59 @@ SCOPES = [
 manual = '--manual' in sys.argv[1:]
 redirect_uri = MANUAL_REDIRECT if manual else LOCAL_REDIRECT
 
+def creds_from_json(path: Path):
+    """Cloud Console の「JSON をダウンロード」で落ちるファイルから ID/Secret を読む。
+    client_secret は作成直後の画面でしか表示されない（2025年6月以降マスクされる）ので、
+    手で写すより JSON を渡すほうが確実で速い。"""
+    try:
+        blob = json.loads(path.read_text(encoding='utf-8'))
+    except Exception as e:
+        raise SystemExit(f'JSON を読めませんでした: {path} ({e})')
+    # 種別によって "web" か "installed" のどちらかに入っている
+    node = blob.get('web') or blob.get('installed') or blob
+    cid, sec = node.get('client_id', ''), node.get('client_secret', '')
+    if not (cid and sec):
+        raise SystemExit(f'client_id / client_secret が見つかりません: {path}')
+    return cid, sec
+
+
 load_dotenv(ENV_PATH)
-client_id     = os.environ.get('GHEALTH_CLIENT_ID', '') or input('Google Client ID: ').strip()
-client_secret = os.environ.get('GHEALTH_CLIENT_SECRET', '') or input('Google Client Secret: ').strip()
+
+json_arg = None
+if '--json' in sys.argv:
+    i = sys.argv.index('--json')
+    if len(sys.argv) > i + 1:
+        json_arg = Path(sys.argv[i + 1]).expanduser()
+
+client_id     = os.environ.get('GHEALTH_CLIENT_ID', '')
+client_secret = os.environ.get('GHEALTH_CLIENT_SECRET', '')
+
+if json_arg:
+    client_id, client_secret = creds_from_json(json_arg)
+    print(f'認証情報を読み込みました: {json_arg.name}')
+elif not (client_id and client_secret):
+    # ~/Downloads に落ちたままの認証情報 JSON を拾う（最新のもの）
+    found = sorted(Path.home().glob('Downloads/client_secret*.json'),
+                   key=lambda p: p.stat().st_mtime, reverse=True)
+    if found:
+        client_id, client_secret = creds_from_json(found[0])
+        print(f'認証情報を読み込みました: ~/Downloads/{found[0].name}')
+    else:
+        client_id     = input('Google Client ID: ').strip()
+        client_secret = input('Google Client Secret: ').strip()
+
+# client_id の形を先に確かめる。ここが違うと Google 側では
+# 「401 invalid_client / Client missing a project id」という原因の分かりにくい
+# エラー画面になり、アカウントやスコープの問題と誤診しやすい。
+if not client_id.endswith('.apps.googleusercontent.com'):
+    print(f'\n❌ Client ID の形式が正しくありません: {client_id!r}')
+    print('   正しい形: 123456789012-xxxxxxxxxxxx.apps.googleusercontent.com')
+    print('   これは「クライアント」→ OAuth クライアント ID を作成したときに発行される値です。')
+    print('   プロジェクト ID / プロジェクト番号 / API キーとは別物なので注意してください。')
+    raise SystemExit(1)
+if not client_secret:
+    raise SystemExit('\n❌ Client Secret が空です。作成直後の画面の「JSON をダウンロード」から取得してください。')
+
 state = secrets.token_hex(16)
 
 auth_url = AUTH_URL + '?' + urllib.parse.urlencode({

@@ -42,16 +42,28 @@ CLIENT_SECRET = os.environ.get('GHEALTH_CLIENT_SECRET', '')
 REFRESH_TOKEN = os.environ.get('GHEALTH_REFRESH_TOKEN', '')
 ACCESS_TOKEN  = os.environ.get('GHEALTH_ACCESS_TOKEN', '')
 
-# ダッシュボードで使う指標 → Google Health API のデータ型 ID
+# 指標 → (データ型 ID, レスポンス中のキー名)
+# 値は dataPoint['value'] ではなく、データ型名の camelCase キーの下に入っている。
 DATA_TYPES = {
-    'hrv':            'daily-heart-rate-variability',
-    'rhr':            'daily-resting-heart-rate',
-    'breathing_rate': 'daily-respiratory-rate',
-    'spo2':           'daily-oxygen-saturation',
-    'skin_temp':      'daily-sleep-temperature-derivations',
-    'vo2max':         'daily-vo2-max',
-    'sleep':          'sleep',
+    'hrv':            ('daily-heart-rate-variability',        'dailyHeartRateVariability'),
+    'rhr':            ('daily-resting-heart-rate',            'dailyRestingHeartRate'),
+    'breathing_rate': ('daily-respiratory-rate',              'dailyRespiratoryRate'),
+    'spo2':           ('daily-oxygen-saturation',             'dailyOxygenSaturation'),
+    'skin_temp':      ('daily-sleep-temperature-derivations', 'dailySleepTemperatureDerivations'),
+    'vo2max':         ('daily-vo2-max',                       'dailyVo2Max'),
+    'sleep':          ('sleep',                               'sleep'),
 }
+
+# ⚠️ Google Health は Fitbit 実機だけでなく、iPhone の Apple ヘルスケア経由で
+# 同期された Oura / WHOOP のデータも同じストリームで返す
+# （dataSource.platform == 'HEALTH_KIT', application.packageName で判別）。
+# 素通しすると「Google Health」列に Oura の値が入り、ソース比較が自己比較になって
+# 無意味になるため、FITBIT 由来だけを採用する。
+FITBIT_PLATFORM = 'FITBIT'
+
+
+def is_fitbit(point: dict) -> bool:
+    return (point.get('dataSource', {}) or {}).get('platform') == FITBIT_PLATFORM
 
 
 def configured() -> bool:
@@ -131,12 +143,32 @@ def get(data_type: str, params: dict | None = None):
     return None
 
 
+def iter_points(data_type: str, max_pages: int = 4, page_size: int = 100):
+    """dataPoints をページを跨いで順に返す。結果は開始時刻の降順。
+
+    HealthKit 経由の Oura / WHOOP が同じページに混ざるぶん、FITBIT 由来のデータは
+    1ページあたりの密度が下がる。目的の日に届く前にページが尽きないよう複数ページ辿る。"""
+    token = None
+    for _ in range(max_pages):
+        params = {'pageSize': page_size}
+        if token:
+            params['pageToken'] = token
+        data = get(data_type, params)
+        if not data:
+            return
+        for p in data.get('dataPoints', []):
+            yield p
+        token = data.get('nextPageToken')
+        if not token:
+            return
+
+
 def probe(only: str | None = None):
     """各データ型の最新数件を生のまま出す。フィルタ構文もレスポンス形も
     実物を見てから書くための下見用。"""
     if not configured():
         raise SystemExit('GHEALTH_* が .env に未設定です。google_health_auth.py を先に実行してください。')
-    for key, dt in DATA_TYPES.items():
+    for key, (dt, _) in DATA_TYPES.items():
         if only and only not in (key, dt):
             continue
         print(f'\n===== {key}  ({dt}) =====')
